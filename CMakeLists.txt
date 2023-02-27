@@ -1,4 +1,4 @@
-afr_module(NAME freertos_cellular_interface INTERNAL)
+afr_module(INTERNAL)    #NAME FreeRTOS-Cellular-Interface
 
 set(src_dir "${CMAKE_CURRENT_LIST_DIR}/source")
 set(inc_dir "${CMAKE_CURRENT_LIST_DIR}/source/include")
@@ -6,7 +6,7 @@ set(interface_dir "${CMAKE_CURRENT_LIST_DIR}/source/interface")
 set(test_dir "${CMAKE_CURRENT_LIST_DIR}/test")
 
 afr_module_sources(
-        freertos_cellular_interface #${AFR_CURRENT_MODULE}
+        ${AFR_CURRENT_MODULE}
         PRIVATE
         "${src_dir}/cellular_3gpp_api.c"
         "${src_dir}/cellular_3gpp_urc_handler.c"
@@ -30,14 +30,14 @@ afr_module_sources(
 )
 
 afr_module_include_dirs(
-        freertos_cellular_interface #${AFR_CURRENT_MODULE}
+        ${AFR_CURRENT_MODULE}
         PUBLIC "${inc_dir}" "${interface_dir}"
         PRIVATE "${test_dir}"
 )
 
 afr_module_dependencies(
-        freertos_cellular_interface #${AFR_CURRENT_MODULE}
-        PUBLIC AFR::freertos_cellular_interface::mcu_port AFR::freertos_cellular_interface::module #AFR::${AFR_CURRENT_MODULE}::mcu_port AFR::${AFR_CURRENT_MODULE}::module
+        ${AFR_CURRENT_MODULE}
+        PUBLIC AFR::${AFR_CURRENT_MODULE}::mcu_port FreeRTOS-Cellular-Interface-Module #AFR::FreeRTOS-Cellular-Interface::mcu_port AFR::FreeRTOS-Cellular-Interface::module
 )
 
 #afr_test_module()
@@ -50,5 +50,5 @@ afr_module_dependencies(
 #
 #afr_module_dependencies(
 #    ${AFR_CURRENT_MODULE}
-#    INTERFACE AFR::freertos_cellular_interface
+#    INTERFACE AFR::FreeRTOS-Cellular-Interface
 #)
