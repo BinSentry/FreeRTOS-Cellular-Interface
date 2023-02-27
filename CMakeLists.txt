@@ -37,7 +37,7 @@ afr_module_include_dirs(
 
 afr_module_dependencies(
     ${AFR_CURRENT_MODULE}
-    PUBLIC AFR::${AFR_CURRENT_MODULE}::mcu_port FreeRTOS-Cellular-Interface-Module #AFR::FreeRTOS-Cellular-Interface::mcu_port AFR::FreeRTOS-Cellular-Interface::module
+    PUBLIC AFR::${AFR_CURRENT_MODULE}::mcu_port AFR::FreeRTOS-Cellular-Interface-Module #AFR::FreeRTOS-Cellular-Interface::mcu_port AFR::FreeRTOS-Cellular-Interface::module
 )
 
 #afr_test_module()
