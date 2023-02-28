@@ -1,4 +1,4 @@
-afr_module()  #INTERNAL  #NAME FreeRTOS-Cellular-Interface
+afr_module()
 
 set(src_dir "${CMAKE_CURRENT_LIST_DIR}/source")
 set(inc_dir "${CMAKE_CURRENT_LIST_DIR}/source/include")
@@ -39,16 +39,3 @@ afr_module_dependencies(
     ${AFR_CURRENT_MODULE}
     PUBLIC AFR::${AFR_CURRENT_MODULE}::mcu_port AFR::FreeRTOS-Cellular-Interface-Module #AFR::FreeRTOS-Cellular-Interface::mcu_port AFR::FreeRTOS-Cellular-Interface::module
 )
-
-#afr_test_module()
-#
-#afr_module_sources(
-#    ${AFR_CURRENT_MODULE}
-#    INTERFACE
-#        "${test_dir}/iot_test_freertos_tcp.c"
-#)
-#
-#afr_module_dependencies(
-#    ${AFR_CURRENT_MODULE}
-#    INTERFACE AFR::FreeRTOS-Cellular-Interface
-#)
