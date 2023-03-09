@@ -145,6 +145,7 @@ typedef enum CellularSimCardLockState
     CELLULAR_SIM_CARD_PUK,           /**< The cellular sim card in a lock state of puk(personal unlocking key). */
     CELLULAR_SIM_CARD_PIN2,          /**< The cellular sim card in a lock state of pin2. */
     CELLULAR_SIM_CARD_PUK2,          /**< The cellular sim card in a lock state of puk2. */
+    CELLULAR_SIM_CARD_PH_SIM_PIN,    /**< The cellular sim card in a lock state of ph-sim pin. */
     CELLULAR_SIM_CARD_PH_NET_PIN,    /**< The cellular sim card in a lock state of ph-net pin. */
     CELLULAR_SIM_CARD_PH_NET_PUK,    /**< The cellular sim card in a lock state of ph-net puk. */
     CELLULAR_SIM_CARD_PH_NETSUB_PIN, /**< The cellular sim card in a lock state of ph-netsub pin. */
