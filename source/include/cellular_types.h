@@ -470,7 +470,7 @@ typedef struct CellularServiceStatus
  */
 typedef struct CellularATCommandLine
 {
-    struct CellularATCommandLine * pNext; /**< The CellularATCommandLine structure pointer points to the next element of the liniked list. */
+    struct CellularATCommandLine * pNext; /**< The CellularATCommandLine structure pointer points to the next element of the linked list. */
     char * pLine;                         /**< The content of the at command. */
 } CellularATCommandLine_t;
 
