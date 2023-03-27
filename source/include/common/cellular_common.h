@@ -565,7 +565,7 @@ CellularPktStatus_t _Cellular_TimeoutAtcmdDataSendRequestWithCallback( CellularC
  * @param[in] pContext The opaque cellular context pointer created by Cellular_Init.
  * @param[in] atReq The AT command data structure with send command response callback.
  * @param[in] dataReq The following data request after the at request.
- * @param[in] pktDataSendPrefixCallback The callback function to inidcate the data sending start.
+ * @param[in] pktDataSendPrefixCallback The callback function to indicate the data sending start.
  * @param[in] pCallbackContext The callback context pass to pktDataSendPrefixCallback function.
  * @param[in] atTimeoutMS The timeout value to wait for the AT command response from cellular modem.
  * @param[in] dataTimeoutMS The timeout value to wait for the data command response from cellular modem.

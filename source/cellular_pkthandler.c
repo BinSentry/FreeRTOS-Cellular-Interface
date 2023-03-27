@@ -227,7 +227,8 @@ static CellularPktStatus_t _Cellular_AtcmdRequestTimeoutWithCallbackRaw( Cellula
 
         if( pktStatus != CELLULAR_PKT_STATUS_OK )
         {
-            LogError( ( "Can't send req packet" ) );
+            LogError( ( "Can't send req packet AT command %s, pktStatus %d.",
+                        atReq.pAtCmd, pktStatus ) );
         }
         else
         {

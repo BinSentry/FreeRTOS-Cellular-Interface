@@ -239,7 +239,7 @@ static CellularPktStatus_t _processIntermediateResponse( char * pLine,
 
         case CELLULAR_AT_MULTI_DATA_WO_PREFIX:
             _saveATData( pLine, pResp );
-            pkStatus = CELLULAR_PKT_STATUS_PENDING_BUFFER;
+            pkStatus = CELLULAR_PKT_STATUS_PENDING_BUFFER;  // TODO (MV): Does this work for FILE upload command? No, use CELLULAR_AT_WITH_PREFIX instead?
             break;
 
         default:
@@ -290,7 +290,7 @@ static void _Cellular_AtResponseFree( CellularATCommandResponse_t * pResp )
             pToFree = pCurrLine;
             pCurrLine = pCurrLine->pNext;
 
-            /* Ruese the pktiobuffer. No need to free pToFree->pLine here. */
+            /* Reuse the pktiobuffer. No need to free pToFree->pLine here. */
             Platform_Free( pToFree );
         }
 
@@ -587,9 +587,15 @@ static char * _Cellular_ReadLine( CellularContext_t * pContext,
 
     if( bufferEmptyLength > 0 )
     {
-        ( void ) pContext->pCommIntf->recv( pContext->hPktioCommIntf, ( uint8_t * ) pRead,
+        // FUTURE: Receive error is logged but otherwise ignored, need better handling of this case
+        CellularCommInterfaceError_t receiveError = pContext->pCommIntf->recv( pContext->hPktioCommIntf,
+                                            ( uint8_t * ) pRead,
                                             bufferEmptyLength,
                                             CELLULAR_COMM_IF_RECV_TIMEOUT_MS, &bytesRead );
+        if (receiveError != IOT_COMM_INTERFACE_SUCCESS && receiveError != IOT_COMM_INTERFACE_TIMEOUT)
+        {
+            LogDebug( ( "Receive error: %d", receiveError ) );
+        }
 
         if( bytesRead > 0U )
         {
@@ -611,6 +617,7 @@ static char * _Cellular_ReadLine( CellularContext_t * pContext,
     }
     else
     {
+        // TODO (MV): This is potentially fatal error for sockets, how should this be handled?
         LogError( ( "No empty space from comm if to handle incoming data, reset all parameter for next incoming data." ) );
         *pBytesRead = 0;
         pContext->partialDataRcvdLen = 0;
@@ -1287,9 +1294,16 @@ CellularPktStatus_t _Cellular_PktioSendAtCmd( CellularContext_t * pContext,
 
             PlatformMutex_Unlock( &pContext->PktRespMutex );
 
-            ( void ) pContext->pCommIntf->send( pContext->hPktioCommIntf,
-                                                ( const uint8_t * ) &pContext->pktioSendBuf, newCmdLen,
-                                                CELLULAR_COMM_IF_SEND_TIMEOUT_MS, &sentLen );
+            CellularCommInterfaceError_t sendError = pContext->pCommIntf->send( pContext->hPktioCommIntf,
+                                                        ( const uint8_t * ) &pContext->pktioSendBuf, newCmdLen,
+                                                        CELLULAR_COMM_IF_SEND_TIMEOUT_MS, &sentLen );
+            if (sendError != IOT_COMM_INTERFACE_SUCCESS) {
+                LogDebug( ( "Send error: %d", sendError ) );
+                pktStatus = CELLULAR_PKT_STATUS_FAILURE;
+            } else if (sentLen < newCmdLen) {
+                LogDebug( ( "Failed to send whole AT command, len: %lu, sentLen: %lu", newCmdLen, sentLen ) );
+                pktStatus = CELLULAR_PKT_STATUS_FAILURE;
+            }
         }
     }
 
@@ -1319,8 +1333,11 @@ uint32_t _Cellular_PktioSendData( CellularContext_t * pContext,
     }
     else
     {
-        ( void ) pContext->pCommIntf->send( pContext->hPktioCommIntf, pData,
+        CellularCommInterfaceError_t sendError = pContext->pCommIntf->send( pContext->hPktioCommIntf, pData,
                                             dataLen, CELLULAR_COMM_IF_SEND_TIMEOUT_MS, &sentLen );
+        if (sendError != IOT_COMM_INTERFACE_SUCCESS) {
+            LogDebug( ( "Send error: %d", sendError ) );
+        }
     }
 
     LogDebug( ( "PktioSendData sent %d bytes", sentLen ) );

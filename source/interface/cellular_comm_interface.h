@@ -107,6 +107,8 @@ typedef CellularCommInterfaceError_t ( * CellularCommInterfaceOpen_t )( Cellular
  * @param[out] pDataSentLength Out parameter to provide the length of the actual
  * data sent. Note that it may be less than the dataLength in case complete data
  * could not be sent.
+ * *** NOTE: pDataSentLength is expected to always contain a valid sent data length
+ *           even if error is returned. ***
  *
  * @return IOT_COMM_INTERFACE_SUCCESS if the operation is successful, otherwise
  * an error code indicating the cause of the error.
@@ -129,6 +131,8 @@ typedef CellularCommInterfaceError_t ( * CellularCommInterfaceSend_t )( Cellular
  * @param[out] pDataReceivedLength Out parameter to provide the length of the
  * actual data received in the buffer pBuffer. Note that it may be less than
  * the bufferLength.
+ * *** NOTE: pDataReceivedLength is expected to always contain a valid received
+ *           data length even if error is returned. ***
  *
  * @return IOT_COMM_INTERFACE_SUCCESS if the operation is successful, otherwise
  * an error code indicating the cause of the error.
