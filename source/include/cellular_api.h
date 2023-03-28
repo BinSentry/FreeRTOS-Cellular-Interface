@@ -584,6 +584,8 @@ CellularError_t Cellular_SocketSetSockOpt( CellularHandle_t cellularHandle,
                                            const uint8_t * pOptionValue,
                                            uint32_t optionValueLength );
 
+// TODO (MV): Add Cellular_SocketSetSSLOpt()
+
 /**
  * @brief Register Socket open callback on the socket.
  *
@@ -638,6 +640,59 @@ CellularError_t Cellular_SocketRegisterClosedCallback( CellularHandle_t cellular
                                                        CellularSocketHandle_t socketHandle,
                                                        CellularSocketClosedCallback_t closedCallback,
                                                        void * pCallbackContext );
+
+/**
+ * @brief Upload a file to the modem.
+ *
+ * @param[in] cellularHandle The opaque cellular context pointer created by Cellular_Init.
+ * @param[in] pcFilename The name of the file to be uploaded.
+ * It should be a NULL terminated string.
+ * Note: recommend using DOS 8.3 file name format.
+ * @param[in] pFile The buffer containing that file data to be uploaded.
+ * @param[in] fileLength Length of the file data in the pData buffer.
+ * NOTE: must not exceed CELLULAR_MAX_SEND_DATA_LEN.
+ * @param[out] uploadedDataLength The output parameter to return the uploaded file data length.
+ * @param[out] xorChecksum The output parameter to return the uploaded file 16-bit XOR checksum.
+ * The 16-bit checksum is based on bitwise XOR. When the number of characters is odd, the last
+ * character is set as the high 8 bit, and the low 8 bit as 0, and then an XOR operator is used
+ * to calculate the checksum.
+ *
+ * @return CELLULAR_SUCCESS if the operation is successful, otherwise an error
+ * code indicating the cause of the error.
+ */
+CellularError_t Cellular_UploadFileToModem( CellularHandle_t cellularHandle,
+                                            const char * pcFilename,
+                                            const uint8_t * pFile,
+                                            uint32_t fileLength,
+                                            CellularFileUploadResult_t * fileUploadResult );
+
+/**
+ * @brief Delete a file on the modem.
+ *
+ * @param[in] cellularHandle The opaque cellular context pointer created by Cellular_Init.
+ * @param[in] pcFilename The name of the file to be uploaded.
+ * It should be a NULL terminated string.
+ *
+ * @return CELLULAR_SUCCESS if the operation is successful, otherwise an error
+ * code indicating the cause of the error.
+ */
+CellularError_t Cellular_DeleteFileOnModem( CellularHandle_t cellularHandle,
+                                            const char * pcFilename );
+
+/**
+ * @brief Calculate CRC-32 for a file on the modem.
+ *
+ * @param[in] cellularHandle The opaque cellular context pointer created by Cellular_Init.
+ * @param[in] pcFilename The name of the file.
+ * It should be a NULL terminated string.
+ * @param[out] crc32 The output parameter to return the file 32-bit CRC checksum.
+ *
+ * @return CELLULAR_SUCCESS if the operation is successful, otherwise an error
+ * code indicating the cause of the error.
+ */
+CellularError_t Cellular_GetModemFileCRC32( CellularHandle_t cellularHandle,
+                                            const char * pcFilename,
+                                            uint32_t * crc32 );
 
 /* *INDENT-OFF* */
 #ifdef __cplusplus

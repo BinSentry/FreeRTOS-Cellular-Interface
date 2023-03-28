@@ -100,7 +100,10 @@ typedef enum CellularError
     CELLULAR_RESOURCE_CREATION_FAIL, /**< Resource creation for Cellular library failed. */
     CELLULAR_UNSUPPORTED,            /**< The operation is not supported. */
     CELLULAR_NOT_ALLOWED,            /**< The operation is not allowed. */
-    CELLULAR_UNKNOWN                 /**< Any other error other than the above mentioned ones. */
+    CELLULAR_UNKNOWN,                /**< Any other error other than the above mentioned ones. */
+    CELLULAR_FILE_UPLOAD_FAILURE,    /**< The supplied file updated failed. */
+    CELLULAR_FILE_ALREADY_EXISTS,    /**< The supplied file already exists. */
+    CELLULAR_FILE_NOT_FOUND,         /**< The supplied file could not be found. */
 } CellularError_t;
 
 /**
@@ -663,6 +666,16 @@ typedef struct CellularEidrxSettingsList
     CellularEidrxSettings_t eidrxList[ CELLULAR_EDRX_LIST_MAX_SIZE ]; /**<  Cellular e-I-DRX settings list. */
     uint8_t count;                                                    /**<  Cellular e-I-DRX settings list number. */
 } CellularEidrxSettingsList_t;
+
+/**
+ * @ingroup cellular_datatypes_paramstructs
+ * @brief Cellular represents file update results.
+ */
+typedef struct CellularFileUploadResult
+{
+    uint32_t uploadedFileLength;
+    uint16_t xorChecksum;
+} CellularFileUploadResult_t;
 
 /**
  * @ingroup cellular_datatypes_paramstructs

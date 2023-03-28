@@ -404,6 +404,22 @@ CellularATError_t Cellular_ATStrtoi( const char * pStr,
                                      int32_t base,
                                      int32_t * pResult );
 
+
+/**
+ * @brief Convert string to uint32_t.
+ *
+ * @param[in] pStr: the input string buffer.
+ * @param[in] base: Numerical base (radix) of pStr.
+ * Input string should not contain leading space or zero.
+ * @param[out] pResult: converted uint32_t result.
+ *  *
+ * @return CELLULAR_AT_SUCCESS if the operation is successful, otherwise an
+ * error code indicating the cause of the error.
+ */
+CellularATError_t Cellular_ATStrtoui( const char * pStr,
+                                     int32_t base,
+                                     uint32_t * pResult );
+
 /* *INDENT-OFF* */
 #ifdef __cplusplus
     }

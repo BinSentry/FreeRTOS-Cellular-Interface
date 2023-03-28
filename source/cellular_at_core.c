@@ -832,6 +832,7 @@ CellularATError_t Cellular_ATStrtoi( const char * pStr,
         /* MISRA Ref 22.8.1 [Initialize errno] */
         /* More details at: https://github.com/FreeRTOS/FreeRTOS-Cellular-Interface/blob/main/MISRA.md#rule-228 */
         /* coverity[misra_c_2012_rule_22_8_violation] */
+        // TODO (MV): Convert this to use strtoll and check range is inside int32_t
         retStrtol = ( int32_t ) strtol( pStr, &pEndStr, base );
 
         /* The return value zero may stand for the failure of strtol. So if the return value
@@ -845,6 +846,58 @@ CellularATError_t Cellular_ATStrtoi( const char * pStr,
         else
         {
             *pResult = retStrtol;
+        }
+    }
+
+    /* MISRA Ref 4.7.1 [Testing errno] */
+    /* More details at: https://github.com/FreeRTOS/FreeRTOS-Cellular-Interface/blob/main/MISRA.md#directive-47 */
+    /* MISRA Ref 22.9.1 [Testing errno] */
+    /* More details at: https://github.com/FreeRTOS/FreeRTOS-Cellular-Interface/blob/main/MISRA.md#rule-229 */
+    /* coverity[need_errno_test] */
+    /* coverity[return_without_test] */
+    return atStatus;
+}
+
+/*-----------------------------------------------------------*/
+
+CellularATError_t Cellular_ATStrtoui( const char * pStr,
+                                      int32_t base,
+                                      uint32_t * pResult )
+{
+    CellularATError_t atStatus = CELLULAR_AT_SUCCESS;
+    int64_t retStrtoll = 0;
+    char * pEndStr = NULL;
+
+    if( ( pStr == NULL ) || ( pResult == NULL ) )
+    {
+        atStatus = CELLULAR_AT_BAD_PARAMETER;
+    }
+    else
+    {
+        /* MISRA Ref 22.8.1 [Initialize errno] */
+        /* More details at: https://github.com/FreeRTOS/FreeRTOS-Cellular-Interface/blob/main/MISRA.md#rule-228 */
+        /* coverity[misra_c_2012_rule_22_8_violation] */
+        retStrtoll = strtoull( pStr, &pEndStr, base );
+
+        /* The return value zero may stand for the failure of strtoul. So if the return value
+         * is zero, need to check the address of pEndStr, if it's greater than the pStr, that
+         * means there is an real parsed zero before pEndStr.
+         */
+        if( pEndStr == pStr )
+        {
+            atStatus = CELLULAR_AT_ERROR;
+        }
+        else if ( ( pEndStr == NULL ) || ( *pEndStr != '\0' ) )
+        {
+            atStatus = CELLULAR_AT_ERROR;
+        }
+        else if ( ( retStrtoll < 0 ) || ( retStrtoll > UINT32_MAX ) )
+        {
+            atStatus = CELLULAR_AT_ERROR;
+        }
+        else
+        {
+            *pResult = ( uint32_t ) retStrtoll;
         }
     }
 
