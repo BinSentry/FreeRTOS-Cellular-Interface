@@ -286,7 +286,8 @@ typedef enum CellularSocketType
 typedef enum CellularSocketProtocol
 {
     CELLULAR_SOCKET_PROTOCOL_UDP,
-    CELLULAR_SOCKET_PROTOCOL_TCP
+    CELLULAR_SOCKET_PROTOCOL_TCP,
+    CELLULAR_SOCKET_PROTOCOL_SSL_OVER_TCP   /* Internal use only for SSL sockets. */
 } CellularSocketProtocol_t;
 
 /**

@@ -135,6 +135,9 @@ typedef struct CellularSocketContext
     uint32_t sendTimeoutMs; /**< Send timeout value in milliseconds. */
     uint32_t recvTimeoutMs; /**< Receive timeout value in milliseconds. */
 
+    /* Set for SSL sockets */
+    uint8_t sslContextId;       /**< SSL context ID used by SSL socket. */
+
     /* Set during socket connect. */
     CellularSocketAddress_t remoteSocketAddress; /**< Remote IP address and port. */
 

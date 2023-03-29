@@ -291,15 +291,18 @@ CellularError_t Cellular_GetIPAddress( CellularHandle_t cellularHandle,
  *
  * @param[in] cellularHandle The opaque cellular context pointer created by Cellular_Init.
  * @param[in] contextId Context ID of the PDN context for which DNS needs to be set.
- * @param[in] pDnsServerAddress The address of the DNS server to set.
- * It should be a NULL terminated string.
+ * @param[in] pPrimaryDnsServerAddress The address of the primary DNS server to set.
+ * It should be a NULL terminated string and must be specified.
+ * @param[in] pSecondaryDnsServerAddress The address of the secondary DNS server to set.
+ * If specified it should be a NULL terminated string, but can be NULL.
  *
  * @return CELLULAR_SUCCESS if the operation is successful, otherwise an error
  * code indicating the cause of the error.
  */
 CellularError_t Cellular_SetDns( CellularHandle_t cellularHandle,
                                  uint8_t contextId,
-                                 const char * pDnsServerAddress );
+                                 const char * pPrimaryDnsServerAddress,
+                                 const char * pSecondaryDnsServerAddress );
 
 /**
  * @brief Register/Remove callback for Network Registration URC events.
@@ -474,6 +477,26 @@ CellularError_t Cellular_CreateSocket( CellularHandle_t cellularHandle,
                                        CellularSocketDomain_t socketDomain,
                                        CellularSocketType_t socketType,
                                        CellularSocketProtocol_t socketProtocol,
+                                       CellularSocketHandle_t * pSocketHandle );
+
+
+/**
+ * @brief Create an SSL socket (over TCP).
+ *
+ * @param[in] cellularHandle The opaque cellular context pointer created by Cellular_Init.
+ * @param[in] pdnContextId pdn context id on which this socket needs to be created. The pdn
+ * context must be previously activated by Cellular_ActivatePdn function.
+ * @param[in] sslContextId SSL context id on which this SSL socket is created.
+ * @param[in] socketDomain Socket domain.
+ * @param[out] pSocketHandle Out parameter to provide the created handle.
+ *
+ * @return CELLULAR_SUCCESS if the operation is successful, otherwise an error
+ * code indicating the cause of the error.
+ */
+CellularError_t Cellular_CreateSSLSocket( CellularHandle_t cellularHandle,
+                                       uint8_t pdnContextId,
+                                       uint8_t sslContextId,
+                                       CellularSocketDomain_t socketDomain,
                                        CellularSocketHandle_t * pSocketHandle );
 
 /**
