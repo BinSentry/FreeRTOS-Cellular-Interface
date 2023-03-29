@@ -584,7 +584,23 @@ CellularError_t Cellular_SocketSetSockOpt( CellularHandle_t cellularHandle,
                                            const uint8_t * pOptionValue,
                                            uint32_t optionValueLength );
 
-// TODO (MV): Add Cellular_SocketSetSSLOpt()
+/**
+ * @brief Set options for a SSL context.
+ *
+ * @param[in] cellularHandle The opaque cellular context pointer created by Cellular_Init.
+ * @param[in] sslContextId SSL context id on which this option is configured.
+ * @param[in] option SSL context option to set.
+ * @param[in] pOptionValue Buffer containing the SSL context option value.
+ * @param[in] optionValueLength Length of the value pointed to by pOptionValue.
+ *
+ * @return CELLULAR_SUCCESS if the operation is successful, otherwise an error
+ * code indicating the cause of the error.
+ */
+CellularError_t Cellular_SocketSetSSLOpt( CellularHandle_t cellularHandle,
+                                          uint8_t sslContextId,
+                                          CellularSSLContextOption_t option,
+                                          const uint8_t * pOptionValue,
+                                          uint32_t optionValueLength );
 
 /**
  * @brief Register Socket open callback on the socket.

@@ -412,6 +412,16 @@ CellularSocketContext_t * _Cellular_GetSocketData( const CellularContext_t * pCo
 CellularError_t _Cellular_IsValidPdn( uint8_t contextId );
 
 /**
+ * @brief Check SSL context index validity.
+ *
+ * @param[in] contextId The SSL context index to check.
+ *
+ * @return CELLULAR_SUCCESS if the operation is successful, otherwise an error
+ * code indicating the cause of the error.
+ */
+CellularError_t _Cellular_IsValidSSLContext( uint8_t contextId );
+
+/**
  * @brief Convert CSQ command returned RSSI value.
  *
  * @param[in] csqRssi The CSQ command returned RSSI index.

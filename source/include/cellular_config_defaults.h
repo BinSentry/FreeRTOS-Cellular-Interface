@@ -451,6 +451,26 @@
 #endif
 
 /**
+ * @brief Cellular SSL context ID min value.<br>
+ *
+ * <b>Possible values:</b>`Any positive integer`<br>
+ * <b>Default value (if undefined):</b> 0
+ */
+#ifndef CELLULAR_SSL_CONTEXT_ID_MIN
+#define CELLULAR_SSL_CONTEXT_ID_MIN    ( 0U )
+#endif
+
+/**
+ * @brief Cellular SSL context ID max value.<br>
+ *
+ * <b>Possible values:</b>`Any positive integer`<br>
+ * <b>Default value (if undefined):</b> 5
+ */
+#ifndef CELLULAR_SSL_CONTEXT_ID_MAX
+#define CELLULAR_SSL_CONTEXT_ID_MAX    ( 5U )
+#endif
+
+/**
  * @brief Macro that is called in the cellular library for logging "Error" level
  * messages.
  *
