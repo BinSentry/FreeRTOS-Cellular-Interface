@@ -410,6 +410,7 @@ typedef uint64_t CellularSSLCipherSuite_t;      /**< Bitmask of cipher suites. *
 #define CELLULAR_SSL_CIPHER_SUITE_TLS_PSK_WITH_AES_128_CCM_8                ( 0x0000000100000000ULL )
 #define CELLULAR_SSL_CIPHER_SUITE_TLS_PSK_WITH_AES_128_CBC_SHA256           ( 0x0000000200000000ULL )
 #define CELLULAR_SSL_CIPHER_SUITE_SUPPORT_ALL                               ( 0xFFFFFFFFFFFFFFFFULL )
+#define CELLULAR_SSL_CIPHER_SUITE_INVALID                                   ( 0ULL )
 
 /**
  * @ingroup cellular_datatypes_enums

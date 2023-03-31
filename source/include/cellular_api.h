@@ -568,6 +568,20 @@ CellularError_t Cellular_SocketClose( CellularHandle_t cellularHandle,
                                       CellularSocketHandle_t socketHandle );
 
 /**
+ * @brief Get last result code for socket command.
+ *
+ * @param[in] cellularHandle The opaque cellular context pointer created by Cellular_Init.
+ * @param[out] pBuffer The buffer to receive the data into.
+ * @param[in] bufferLength Length of the buffer pBuffer.
+ *
+ * @return CELLULAR_SUCCESS if the operation is successful, otherwise an error
+ * code indicating the cause of the error.
+ */
+CellularError_t Cellular_GetSocketLastResultCode( CellularHandle_t cellularHandle,
+                                                  uint8_t * pBuffer,
+                                                  uint32_t bufferLength);
+
+/**
  * @brief Resolve a host name using Domain Name Service.
  *
  * @param[in] cellularHandle The opaque cellular context pointer created by Cellular_Init.
