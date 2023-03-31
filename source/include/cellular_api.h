@@ -571,15 +571,14 @@ CellularError_t Cellular_SocketClose( CellularHandle_t cellularHandle,
  * @brief Get last result code for socket command.
  *
  * @param[in] cellularHandle The opaque cellular context pointer created by Cellular_Init.
- * @param[out] pBuffer The buffer to receive the data into.
- * @param[in] bufferLength Length of the buffer pBuffer.
+ * @param[out] lastResultCode The output parameter to result the socket last result code.
+ * NOTE: result code is modem specific and meant for diagnostic purposes.
  *
  * @return CELLULAR_SUCCESS if the operation is successful, otherwise an error
  * code indicating the cause of the error.
  */
 CellularError_t Cellular_GetSocketLastResultCode( CellularHandle_t cellularHandle,
-                                                  uint8_t * pBuffer,
-                                                  uint32_t bufferLength);
+                                                  uint32_t * lastResultCode);
 
 /**
  * @brief Resolve a host name using Domain Name Service.
