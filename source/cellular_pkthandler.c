@@ -285,10 +285,21 @@ static CellularPktStatus_t _Cellular_DataSendWithTimeoutDelayRaw( CellularContex
     {
         LogDebug( ( ">>>>>Start sending Data <<<<<" ) );
 
-        /* Send the packet. Data send is regarded as CELLULAR_AT_NO_RESULT. Only
-         * success or error token is expected in the result. */
+        /* Send the packet and look for response if specified. */
         PlatformMutex_Lock( &pContext->PktRespMutex );
-        pContext->PktioAtCmdType = CELLULAR_AT_NO_RESULT;
+        pContext->PktioAtCmdType = dataReq.atCmdType;
+        pContext->pktRespCB = dataReq.respCallback;
+        pContext->pPktUsrData = dataReq.pRespCallbackData;
+        pContext->PktUsrDataLen = ( uint16_t ) dataReq.respCallbackDataLen;
+        if( dataReq.pAtRspPrefix != NULL )
+        {
+            ( void ) strncpy( pContext->pktRespPrefixBuf, dataReq.pAtRspPrefix, CELLULAR_CONFIG_MAX_PREFIX_STRING_LENGTH );
+            pContext->pRespPrefix = pContext->pktRespPrefixBuf;
+        }
+        else
+        {
+            pContext->pRespPrefix = NULL;
+        }
         PlatformMutex_Unlock( &pContext->PktRespMutex );
 
         *dataReq.pSentDataLength = _Cellular_PktioSendData( pContext, dataReq.pData, dataReq.dataLen );
@@ -339,9 +350,11 @@ static CellularPktStatus_t _Cellular_DataSendWithTimeoutDelayRaw( CellularContex
             LogError( ( "pkt_recv status=%d, data sending timed out", pktStatus ) );
         }
 
+        // TODO (MV): Shouldn't this be done regardless? Why is it inside if condition?
         /* Set AT command type to CELLULAR_AT_NO_COMMAND for timeout case here. */
         PlatformMutex_Lock( &pContext->PktRespMutex );
         pContext->PktioAtCmdType = CELLULAR_AT_NO_COMMAND;
+        pContext->pktRespCB = NULL;
         PlatformMutex_Unlock( &pContext->PktRespMutex );
 
         LogDebug( ( "<<<<<Exit sending data ret[%d]>>>>>", pktStatus ) );

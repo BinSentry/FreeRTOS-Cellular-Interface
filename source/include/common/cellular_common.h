@@ -82,6 +82,13 @@ typedef struct CellularAtDataReq
                                   * end pattern instead of length in AT command
                                   * can make use of this variable. */
     uint32_t endPatternLen;      /**< End pattern length. */
+
+    /**< Only needed if response expected post data send. */    // FUTURE: These parameters below could be broken out into own typedef and shared with common items in CellularAtReq_t
+    CellularATCommandType_t atCmdType;                        /**< The At command type. */
+    const char * pAtRspPrefix;                                /**< The prefix of at command response. */
+    CellularATCommandResponseReceivedCallback_t respCallback; /**< The callback function #CellularATCommandResponseReceivedCallback_t. */
+    void * pRespCallbackData;                                 /**< The data pointer to the response callback data. */
+    uint16_t respCallbackDataLen;                             /**< The length of the response callback data pointer . */
 } CellularAtDataReq_t;
 
 /**

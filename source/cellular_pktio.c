@@ -239,7 +239,7 @@ static CellularPktStatus_t _processIntermediateResponse( char * pLine,
 
         case CELLULAR_AT_MULTI_DATA_WO_PREFIX:
             _saveATData( pLine, pResp );
-            pkStatus = CELLULAR_PKT_STATUS_PENDING_BUFFER;  // TODO (MV): Does this work for FILE upload command? No, use CELLULAR_AT_WITH_PREFIX instead?
+            pkStatus = CELLULAR_PKT_STATUS_PENDING_BUFFER;
             break;
 
         default:
