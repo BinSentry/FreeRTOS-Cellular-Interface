@@ -407,6 +407,32 @@ CellularError_t Cellular_SetPsmSettings( CellularHandle_t cellularHandle,
                                          const CellularPsmSettings_t * pPsmSettings );
 
 /**
+ * @brief Get current PSM config settings.
+ *
+ * @param[in] cellularHandle The opaque cellular context pointer created by Cellular_Init.
+ * @param[out] pPsmConfigSettings Out parameter to provide the PSM config settings.
+ *
+ * @return CELLULAR_SUCCESS if the operation is successful, otherwise an error
+ * code indicating the cause of the error.
+ */
+CellularError_t Cellular_GetPsmConfigSettings( CellularHandle_t cellularHandle,
+                                               CellularPsmConfigSettings_t * pPsmConfigSettings );
+
+/**
+ * @brief Set PSM config settings.
+ *
+ * Set PSM threshold and supported version(s).
+ *
+ * @param[in] cellularHandle The opaque cellular context pointer created by Cellular_Init.
+ * @param[in] pPsmConfigSettings PSM config settings to set.
+ *
+ * @return CELLULAR_SUCCESS if the operation is successful, otherwise an error
+ * code indicating the cause of the error.
+ */
+CellularError_t Cellular_SetPsmConfigSettings( CellularHandle_t cellularHandle,
+                                               const CellularPsmConfigSettings_t * pPsmConfigSettings );
+
+/**
  * @brief Get current e-I-DRX settings.
  *
  * @param[in] cellularHandle The opaque cellular context pointer created by Cellular_Init.

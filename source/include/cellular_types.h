@@ -730,6 +730,31 @@ typedef struct CellularPsmSettings
 
 /**
  * @ingroup cellular_datatypes_paramstructs
+ * @brief Represents PSM configuration settings.
+ */
+typedef struct CellularPsmConfigSettings
+{
+    /*
+     * Condition to enter PSM: <threshold> less than PSM cycle (= T3412 - T3324).
+     */
+    uint32_t threshold; /**< Minimum threshold value of the PSM cycle (in seconds). */
+
+    /*
+     * Each bit is configured independently. Range: 0-15.
+     * Bit 0: PSM without network coordination
+     * Bit 1: Rel-12 PSM without context retention
+     * Bit 2: Rel-12 PSM with context retention
+     * Bit 3: PSM in-between eDRX cycles
+     * Bit 4: Reserved
+     * Bit 5: Reserved
+     * Bit 6: Reserved
+     * Bit 7: Reserved
+     */
+    uint8_t psmVersion; /**< Bitmask to indicate the PSM feature (1: Enable; 0: Disable) (as shown above). */
+} CellularPsmConfigSettings_t;
+
+/**
+ * @ingroup cellular_datatypes_paramstructs
  * @brief Represents e-I-DRX settings.
  */
 typedef struct CellularEidrxSettings
