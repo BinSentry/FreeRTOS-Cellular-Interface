@@ -772,6 +772,55 @@ CellularError_t Cellular_GetModemFileCRC32( CellularHandle_t cellularHandle,
                                             const char * pcFilename,
                                             uint32_t * crc32 );
 
+/**
+ * @brief Get the module communication flow control settings.
+ *
+ * @param[in] cellularHandle The opaque cellular context pointer created by Cellular_Init.
+ * @param[out] flowControl The output parameter to return the communication flow control settings.
+ *
+ * @return CELLULAR_SUCCESS if the operation is successful, otherwise an error
+ * code indicating the cause of the error.
+ */
+CellularError_t Cellular_GetModuleFlowControlSetting( CellularHandle_t cellularHandle,
+                                                      CellularModuleCommFlowControl_t * flowControl );
+
+/**
+ * @brief Set the module communication flow control settings.
+ *
+ * @param[in] cellularHandle The opaque cellular context pointer created by Cellular_Init.
+ * @param[in] flowControl The communication flow control settings.
+ *
+ * @return CELLULAR_SUCCESS if the operation is successful, otherwise an error
+ * code indicating the cause of the error.
+ */
+CellularError_t Cellular_SetModuleFlowControlSetting( CellularHandle_t cellularHandle,
+                                                      CellularModuleCommFlowControl_t * flowControl );
+
+/**
+ * @brief Get the module communication baud rate setting.
+ *
+ * @param[in] cellularHandle The opaque cellular context pointer created by Cellular_Init.
+ * @param[out] baudRate The output parameter to return the communication baud rate (bps) setting.
+ *
+ * @return CELLULAR_SUCCESS if the operation is successful, otherwise an error
+ * code indicating the cause of the error.
+ */
+CellularError_t Cellular_GetModuleBaudRateSetting( CellularHandle_t cellularHandle,
+                                                   uint32_t * baudRate );
+
+/**
+ * @brief Set the module communication baud rate setting.
+ *
+ * @param[in] cellularHandle The opaque cellular context pointer created by Cellular_Init.
+ * @param[in] baudRate The communication baud rate (bps) setting.
+ *
+ * @return CELLULAR_SUCCESS if the operation is successful, otherwise an error
+ * code indicating the cause of the error.
+ */
+CellularError_t Cellular_SetModuleBaudRateSetting( CellularHandle_t cellularHandle,
+                                                   uint32_t baudRate );
+
+
 /* *INDENT-OFF* */
 #ifdef __cplusplus
     }

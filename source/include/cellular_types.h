@@ -498,6 +498,19 @@ typedef enum CellularDTLSVersion
 
 /**
  * @ingroup cellular_datatypes_enums
+ * @brief Cellular module communication flow control setting.
+ */
+typedef enum CellularModuleCommFlowControl
+{
+    CELLULAR_MODULE_COMM_FLOW_CONTROL_NONE,
+    CELLULAR_MODULE_COMM_FLOW_CONTROL_RTS,
+    CELLULAR_MODULE_COMM_FLOW_CONTROL_CTS,
+    CELLULAR_MODULE_COMM_FLOW_CONTROL_RTS_CTS,
+    CELLULAR_MODULE_COMM_FLOW_CONTROL_UNKNOWN,
+} CellularModuleCommFlowControl_t;
+
+/**
+ * @ingroup cellular_datatypes_enums
  * @brief packet Status Names.
  */
 typedef enum CellularPktStatus
