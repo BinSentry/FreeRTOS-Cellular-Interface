@@ -726,7 +726,7 @@ CellularATError_t Cellular_ATcheckErrorCode( const char * pInputBuf,
                                              bool * pResult )
 {
     CellularATError_t atStatus = CELLULAR_AT_SUCCESS;
-    uint8_t i = 0;  // TODO (MV): why use a uint8_t here when accepting size_t for key list len
+    size_t i = 0;
     CellularATStringValidationResult_t stringValidationResult = CELLULAR_AT_STRING_UNKNOWN;
     bool tmpResult; // TODO (MV): Strange that this doesn't have a default value like elsewhere
 
