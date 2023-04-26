@@ -820,6 +820,17 @@ CellularError_t Cellular_GetModuleBaudRateSetting( CellularHandle_t cellularHand
 CellularError_t Cellular_SetModuleBaudRateSetting( CellularHandle_t cellularHandle,
                                                    uint32_t baudRate );
 
+/**
+ * @brief Command the module to power down.
+ *
+ * @param[in] cellularHandle The opaque cellular context pointer created by Cellular_Init.
+ * @param[in] powerDownMode The type of power down to execute.
+ *
+ * @return CELLULAR_SUCCESS if the operation is successful, otherwise an error
+ * code indicating the cause of the error.
+ */
+CellularError_t Cellular_PowerDown( CellularHandle_t cellularHandle,
+                                    CellularPowerDownMode_t powerDownMode );
 
 /* *INDENT-OFF* */
 #ifdef __cplusplus

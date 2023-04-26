@@ -546,6 +546,12 @@ typedef enum CellularATCommandType
     CELLULAR_AT_NO_COMMAND            /**<  no command is waiting response. */
 } CellularATCommandType_t;
 
+typedef enum CellularPowerDownMode
+{
+    CELLULAR_POWER_DOWN_MODE_NORMAL,    /**<  Normal power-down (i.e. network disconnect, etc) */
+    CELLULAR_POWER_DOWN_MODE_IMMEDIATE  /**<  Immediate power-down */
+} CellularPowerDownMode_t;
+
 /**
  * @ingroup cellular_datatypes_paramstructs
  * @brief SIM Card status.
