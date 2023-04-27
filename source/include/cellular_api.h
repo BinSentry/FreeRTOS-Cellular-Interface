@@ -832,6 +832,18 @@ CellularError_t Cellular_SetModuleBaudRateSetting( CellularHandle_t cellularHand
 CellularError_t Cellular_PowerDown( CellularHandle_t cellularHandle,
                                     CellularPowerDownMode_t powerDownMode );
 
+/**
+ * @brief Set Power Saving Mode (PSM) entry mode.
+ *
+ * @param[in] cellularHandle The opaque cellular context pointer created by Cellular_Init.
+ * @param[in] psmEnterMode The type of PSM entry to execute.
+ *
+ * @return CELLULAR_SUCCESS if the operation is successful, otherwise an error
+ * code indicating the cause of the error.
+ */
+CellularError_t Cellular_SetPSMEntry( CellularHandle_t cellularHandle,
+                                      CellularPSMEnterMode_t psmEnterMode );
+
 /* *INDENT-OFF* */
 #ifdef __cplusplus
     }

@@ -548,9 +548,15 @@ typedef enum CellularATCommandType
 
 typedef enum CellularPowerDownMode
 {
-    CELLULAR_POWER_DOWN_MODE_NORMAL,    /**<  Normal power-down (i.e. network disconnect, etc) */
-    CELLULAR_POWER_DOWN_MODE_IMMEDIATE  /**<  Immediate power-down */
+    CELLULAR_POWER_DOWN_MODE_NORMAL,    /**<  Normal power-down (i.e. network disconnect, etc). */
+    CELLULAR_POWER_DOWN_MODE_IMMEDIATE  /**<  Immediate power-down. */
 } CellularPowerDownMode_t;
+
+typedef enum CellularPSMEnterMode
+{
+    CELLULAR_PSM_ENTER_MODE_NORMAL,    /**<  Enter PSM after T3324 expires. */
+    CELLULAR_PSM_ENTER_MODE_IMMEDIATE  /**<  Enter PSM immediately after the RRC connection release is received. */
+} CellularPSMEnterMode_t;
 
 /**
  * @ingroup cellular_datatypes_paramstructs
