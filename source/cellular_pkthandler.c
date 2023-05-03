@@ -273,7 +273,7 @@ static CellularPktStatus_t _Cellular_DataSendWithTimeoutDelayRaw( CellularContex
 {
     CellularPktStatus_t respCode = CELLULAR_PKT_STATUS_OK;
     CellularPktStatus_t pktStatus = CELLULAR_PKT_STATUS_OK;
-    BaseType_t qStatus = pdFALSE;
+    BaseType_t qStatus = pdFALSE, pktioCmdTypeSet = pdFALSE;
     uint32_t sendEndPatternLen = 0U;
 
     if( ( dataReq.pData == NULL ) || ( dataReq.pSentDataLength == NULL ) )
@@ -300,6 +300,7 @@ static CellularPktStatus_t _Cellular_DataSendWithTimeoutDelayRaw( CellularContex
         {
             pContext->pRespPrefix = NULL;
         }
+        pktioCmdTypeSet = pdTRUE;
         PlatformMutex_Unlock( &pContext->PktRespMutex );
 
         *dataReq.pSentDataLength = _Cellular_PktioSendData( pContext, dataReq.pData, dataReq.dataLen );
@@ -350,14 +351,24 @@ static CellularPktStatus_t _Cellular_DataSendWithTimeoutDelayRaw( CellularContex
             LogError( ( "pkt_recv status=%d, data sending timed out", pktStatus ) );
         }
 
-        // TODO (MV): ***HIGH PRIORITY*** Shouldn't this be done regardless? Why is it inside if condition?
         /* Set AT command type to CELLULAR_AT_NO_COMMAND for timeout case here. */
         PlatformMutex_Lock( &pContext->PktRespMutex );
         pContext->PktioAtCmdType = CELLULAR_AT_NO_COMMAND;
         pContext->pktRespCB = NULL;
+        pktioCmdTypeSet = pdFALSE;
         PlatformMutex_Unlock( &pContext->PktRespMutex );
 
         LogDebug( ( "<<<<<Exit sending data ret[%d]>>>>>", pktStatus ) );
+    }
+
+    if( pktioCmdTypeSet != pdFALSE )
+    {
+        PlatformMutex_Lock( &pContext->PktRespMutex );
+        pContext->PktioAtCmdType = CELLULAR_AT_NO_COMMAND;
+        pContext->pktRespCB = NULL;
+        pktioCmdTypeSet = pdFALSE;
+        PlatformMutex_Unlock( &pContext->PktRespMutex );
+        LogDebug( ( "pkt_recv status=%d, PktioAtCmdType and pktRespCB left set, cleaning up", pktStatus ) );
     }
 
     return pktStatus;
