@@ -820,7 +820,7 @@ CellularATError_t Cellular_ATStrtoi( const char * pStr,
                                      int32_t * pResult )
 {
     CellularATError_t atStatus = CELLULAR_AT_SUCCESS;
-    int32_t retStrtol = 0;
+    int64_t retStrtoll = 0;
     char * pEndStr = NULL;
 
     if( ( pStr == NULL ) || ( pResult == NULL ) )
@@ -832,20 +832,27 @@ CellularATError_t Cellular_ATStrtoi( const char * pStr,
         /* MISRA Ref 22.8.1 [Initialize errno] */
         /* More details at: https://github.com/FreeRTOS/FreeRTOS-Cellular-Interface/blob/main/MISRA.md#rule-228 */
         /* coverity[misra_c_2012_rule_22_8_violation] */
-        // TODO (MV): Convert this to use strtoll and check range is inside int32_t
-        retStrtol = ( int32_t ) strtol( pStr, &pEndStr, base );
+        retStrtoll = strtoll( pStr, &pEndStr, base );
 
-        /* The return value zero may stand for the failure of strtol. So if the return value
+        /* The return value zero may stand for the failure of strtoll. So if the return value
          * is zero, need to check the address of pEndStr, if it's greater than the pStr, that
-         * means there is an real parsed zero before pEndStr.
+         * means there is a real parsed zero before pEndStr.
          */
         if( pEndStr == pStr )
         {
             atStatus = CELLULAR_AT_ERROR;
         }
+        else if ( ( pEndStr == NULL ) || ( *pEndStr != '\0' ) )
+        {
+            atStatus = CELLULAR_AT_ERROR;
+        }
+        else if ( ( retStrtoll < INT32_MIN ) || ( retStrtoll > INT32_MAX ) )
+        {
+            atStatus = CELLULAR_AT_ERROR;
+        }
         else
         {
-            *pResult = retStrtol;
+            *pResult = ( int32_t ) retStrtoll;
         }
     }
 
@@ -877,11 +884,11 @@ CellularATError_t Cellular_ATStrtoui( const char * pStr,
         /* MISRA Ref 22.8.1 [Initialize errno] */
         /* More details at: https://github.com/FreeRTOS/FreeRTOS-Cellular-Interface/blob/main/MISRA.md#rule-228 */
         /* coverity[misra_c_2012_rule_22_8_violation] */
-        retStrtoll = strtoull( pStr, &pEndStr, base );
+        retStrtoll = strtoll( pStr, &pEndStr, base );
 
-        /* The return value zero may stand for the failure of strtoul. So if the return value
+        /* The return value zero may stand for the failure of strtoll. So if the return value
          * is zero, need to check the address of pEndStr, if it's greater than the pStr, that
-         * means there is an real parsed zero before pEndStr.
+         * means there is a real parsed zero before pEndStr.
          */
         if( pEndStr == pStr )
         {
