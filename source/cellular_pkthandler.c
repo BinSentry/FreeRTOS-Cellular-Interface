@@ -350,7 +350,7 @@ static CellularPktStatus_t _Cellular_DataSendWithTimeoutDelayRaw( CellularContex
             LogError( ( "pkt_recv status=%d, data sending timed out", pktStatus ) );
         }
 
-        // TODO (MV): Shouldn't this be done regardless? Why is it inside if condition?
+        // TODO (MV): ***HIGH PRIORITY*** Shouldn't this be done regardless? Why is it inside if condition?
         /* Set AT command type to CELLULAR_AT_NO_COMMAND for timeout case here. */
         PlatformMutex_Lock( &pContext->PktRespMutex );
         pContext->PktioAtCmdType = CELLULAR_AT_NO_COMMAND;

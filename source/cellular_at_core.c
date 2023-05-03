@@ -728,7 +728,7 @@ CellularATError_t Cellular_ATcheckErrorCode( const char * pInputBuf,
     CellularATError_t atStatus = CELLULAR_AT_SUCCESS;
     size_t i = 0;
     CellularATStringValidationResult_t stringValidationResult = CELLULAR_AT_STRING_UNKNOWN;
-    bool tmpResult; // TODO (MV): Strange that this doesn't have a default value like elsewhere
+    bool tmpResult = false;
 
     if( ( pInputBuf == NULL ) || ( ppKeyList == NULL ) || ( pResult == NULL ) )
     {
