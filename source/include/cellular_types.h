@@ -881,6 +881,17 @@ typedef struct CellularEidrxSettingsList
 
 /**
  * @ingroup cellular_datatypes_paramstructs
+ * @brief Cellular represents socket receive statistics.
+ */
+typedef struct CellularSocketReceiveStatistics
+{
+    uint32_t totalReceiveLength;
+    uint32_t haveReadLength;
+    uint32_t unreadLength;
+} CellularSocketReceiveStatistics_t;
+
+/**
+ * @ingroup cellular_datatypes_paramstructs
  * @brief Cellular represents file update results.
  */
 typedef struct CellularFileUploadResult
@@ -1034,6 +1045,7 @@ typedef void ( * CellularSocketOpenCallback_t )( CellularUrcEvent_t urcEvent,
  * @param[in] pCallbackContext pCallbackContext parameter in
  * Cellular_SocketRegisterDataReadyCallback function.
  */
+ // TODO (MV): Why does this callback not specify the amount of data ready?
 typedef void ( * CellularSocketDataReadyCallback_t )( CellularSocketHandle_t socketHandle,
                                                       void * pCallbackContext );
 

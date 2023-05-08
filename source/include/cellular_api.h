@@ -607,6 +607,20 @@ CellularError_t Cellular_GetSocketLastResultCode( CellularHandle_t cellularHandl
                                                   uint32_t * lastResultCode);
 
 /**
+ * @brief Get socket/SSL receive statistics.
+ *
+ * @param[in] cellularHandle The opaque cellular context pointer created by Cellular_Init.
+ * @param[in] socketHandle Socket handle returned from the Cellular_CreateSocket call.
+ * @param[out] receiveStatistics The output parameter to result the socket receive statistics.
+ *
+ * @return CELLULAR_SUCCESS if the operation is successful, otherwise an error
+ * code indicating the cause of the error.
+ */
+CellularError_t Cellular_GetSocketReceiveStats( CellularHandle_t cellularHandle,
+                                                CellularSocketHandle_t socketHandle,
+                                                CellularSocketReceiveStatistics_t * receiveStatistics);
+
+/**
  * @brief Resolve a host name using Domain Name Service.
  *
  * @param[in] cellularHandle The opaque cellular context pointer created by Cellular_Init.
