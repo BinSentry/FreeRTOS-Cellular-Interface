@@ -1298,10 +1298,10 @@ CellularPktStatus_t _Cellular_PktioSendAtCmd( CellularContext_t * pContext,
                                                         ( const uint8_t * ) &pContext->pktioSendBuf, newCmdLen,
                                                         CELLULAR_COMM_IF_SEND_TIMEOUT_MS, &sentLen );
             if (sendError != IOT_COMM_INTERFACE_SUCCESS) {
-                LogDebug( ( "Send error: %d", sendError ) );
+                LogError( ( "Send error: %d", sendError ) );
                 pktStatus = CELLULAR_PKT_STATUS_FAILURE;
             } else if (sentLen < newCmdLen) {
-                LogDebug( ( "Failed to send whole AT command, len: %lu, sentLen: %lu", newCmdLen, sentLen ) );
+                LogError( ( "Failed to send whole AT command, len: %lu, sentLen: %lu", newCmdLen, sentLen ) );
                 pktStatus = CELLULAR_PKT_STATUS_FAILURE;
             }
         }
