@@ -586,12 +586,14 @@ CellularError_t Cellular_SocketRecv( CellularHandle_t cellularHandle,
  *
  * @param[in] cellularHandle The opaque cellular context pointer created by Cellular_Init.
  * @param[in] socketHandle Socket handle returned from the Cellular_CreateSocket call.
+ * @param[in] removeSocketOnError Indicate whether to return error and leave socket, or remove socket on error.
  *
  * @return CELLULAR_SUCCESS if the operation is successful, otherwise an error
  * code indicating the cause of the error.
  */
 CellularError_t Cellular_SocketClose( CellularHandle_t cellularHandle,
-                                      CellularSocketHandle_t socketHandle );
+                                      CellularSocketHandle_t socketHandle,
+                                      bool removeSocketOnError );
 
 /**
  * @brief Get last result code for socket command.
@@ -604,7 +606,7 @@ CellularError_t Cellular_SocketClose( CellularHandle_t cellularHandle,
  * code indicating the cause of the error.
  */
 CellularError_t Cellular_GetSocketLastResultCode( CellularHandle_t cellularHandle,
-                                                  uint32_t * lastResultCode);
+                                                  uint32_t * lastResultCode );
 
 /**
  * @brief Get socket/SSL receive statistics.
@@ -618,7 +620,7 @@ CellularError_t Cellular_GetSocketLastResultCode( CellularHandle_t cellularHandl
  */
 CellularError_t Cellular_GetSocketReceiveStats( CellularHandle_t cellularHandle,
                                                 CellularSocketHandle_t socketHandle,
-                                                CellularSocketReceiveStatistics_t * receiveStatistics);
+                                                CellularSocketReceiveStatistics_t * receiveStatistics );
 
 /**
  * @brief Resolve a host name using Domain Name Service.
