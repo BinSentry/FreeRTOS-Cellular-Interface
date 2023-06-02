@@ -1045,7 +1045,7 @@ typedef void ( * CellularSocketOpenCallback_t )( CellularUrcEvent_t urcEvent,
  * @param[in] pCallbackContext pCallbackContext parameter in
  * Cellular_SocketRegisterDataReadyCallback function.
  */
- // TODO (MV): Why does this callback not specify the amount of data ready?
+ // FUTURE: Change callback to support indicating the amount of data ready
 typedef void ( * CellularSocketDataReadyCallback_t )( CellularSocketHandle_t socketHandle,
                                                       void * pCallbackContext );
 
