@@ -232,6 +232,7 @@ typedef enum CellularModemEvent
 {
     CELLULAR_MODEM_EVENT_BOOTUP_OR_REBOOT, /**< Bootup or reboot modem event. */
     CELLULAR_MODEM_EVENT_POWERED_DOWN,     /**< Power down modem event. */
+    CELLULAR_MODEM_EVENT_PSM_TIMER,         /**< PSM timer modem event. */
     CELLULAR_MODEM_EVENT_PSM_ENTER         /**< PSM enter modem event. */
 } CellularModemEvent_t;
 
