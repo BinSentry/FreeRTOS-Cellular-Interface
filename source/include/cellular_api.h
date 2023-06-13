@@ -211,6 +211,30 @@ CellularError_t Cellular_GetServiceStatus( CellularHandle_t cellularHandle,
                                            CellularServiceStatus_t * pServiceStatus );
 
 /**
+ * @brief Get network service selection.
+ *
+ * @param[in] cellularHandle The opaque cellular context pointer created by Cellular_Init.
+ * @param[out] pServiceSelection Out parameter to provide the network service selection.
+ *
+ * @return CELLULAR_SUCCESS if the operation is successful, otherwise an error
+ * code indicating the cause of the error.
+ */
+CellularError_t Cellular_GetServiceSelection( CellularHandle_t cellularHandle,
+                                              CellularServiceSelection_t * pServiceSelection );
+
+/**
+ * @brief Set network service selection.
+ *
+ * @param[in] cellularHandle The opaque cellular context pointer created by Cellular_Init.
+ * @param[in] pServiceSelection Network service selection to set.
+ *
+ * @return CELLULAR_SUCCESS if the operation is successful, otherwise an error
+ * code indicating the cause of the error.
+ */
+CellularError_t Cellular_SetServiceSelection( CellularHandle_t cellularHandle,
+                                              const CellularServiceSelection_t * pServiceSelection );
+
+/**
  * @brief Set PDN config for a PDN context.
  *
  * @param[in] cellularHandle The opaque cellular context pointer created by Cellular_Init.

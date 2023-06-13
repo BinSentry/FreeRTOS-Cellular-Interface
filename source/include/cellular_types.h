@@ -657,6 +657,19 @@ typedef struct CellularServiceStatus
 
 /**
  * @ingroup cellular_datatypes_paramstructs
+ * @brief Represents network service selection.
+ */
+typedef struct CellularServiceSelection
+{
+    CellularNetworkRegistrationMode_t networkRegistrationMode; /**< Network registration mode (auto/manual etc.). */
+    CellularOperatorNameFormat_t operatorNameFormat;           /**< Format of network operator name. */
+    CellularPlmnInfo_t operatorPlmn;                           /**< Network operator MCC and MNC information. */
+    char operatorName[ CELLULAR_NETWORK_NAME_MAX_SIZE + 1 ];   /**< Network operator name. */
+    CellularRat_t rat;                                         /**< Radio Access Technology (RAT). */
+} CellularServiceSelection_t;
+
+/**
+ * @ingroup cellular_datatypes_paramstructs
  * @brief Represents A singly-lined list of intermediate AT responses.
  */
 typedef struct CellularATCommandLine
