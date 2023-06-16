@@ -663,8 +663,8 @@ typedef struct CellularServiceSelection
 {
     CellularNetworkRegistrationMode_t networkRegistrationMode; /**< Network registration mode (auto/manual etc.). */
     CellularOperatorNameFormat_t operatorNameFormat;           /**< Format of network operator name. */
-    CellularPlmnInfo_t operatorPlmn;                           /**< Network operator MCC and MNC information. */
-    char operatorName[ CELLULAR_NETWORK_NAME_MAX_SIZE + 1 ];   /**< Network operator name. */
+    CellularPlmnInfo_t operatorPlmn;                           /**< Network operator MCC and MNC information. Used if operatorNameFormat is numeric */
+    char operatorName[ CELLULAR_NETWORK_NAME_MAX_SIZE + 1 ];   /**< Network operator name. Used if operatorNameFormat is not numeric. Optionally can be returned if operatorNameFormat is numeric. */
     CellularRat_t rat;                                         /**< Radio Access Technology (RAT). */
 } CellularServiceSelection_t;
 
