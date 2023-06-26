@@ -134,10 +134,10 @@ static void _saveData( char * pLine,
 
     ( void ) dataLen;
 
-    LogDebug( ( "_saveData : Save data %p with length %d", pLine, dataLen ) );
+    LogDebug( ( "_saveData : Save data %p with length %d.", pLine, dataLen ) );
 
     pNew = ( CellularATCommandLine_t * ) Platform_Malloc( sizeof( CellularATCommandLine_t ) );
-    configASSERT( ( pNew != NULL ) );
+    configASSERT( ( pNew != NULL ) );   // FUTURE: Change to handle malloc failure without configASSERT()
 
     /* Reuse the pktio buffer instead of allocate. */
     pNew->pLine = pLine;
@@ -656,7 +656,7 @@ static CellularPktStatus_t _handleData( char * pStartOfData,
         /* There are more bytes after the data. */
         *pBytesLeft = ( bytesDataAndLeft - pContext->dataLength );
 
-        LogDebug( ( "_handleData : read buffer buffer %p start %p prefix %d left %d, read total %d",
+        LogDebug( ( "_handleData : read buffer buffer %p start %p prefix %d left %d, read total %d.",
                     pContext->pktioReadBuf,
                     pStartOfData,
                     bytesBeforeData,
