@@ -617,8 +617,14 @@ static char * _Cellular_ReadLine( CellularContext_t * pContext,
     }
     else
     {
-        // TODO (MV): MAJOR, this is potentially fatal error for sockets, how should this be handled?
         LogError( ( "No empty space from comm if to handle incoming data, reset all parameter for next incoming data." ) );
+        if( pContext->partialDataRcvdLen > 0 )
+        {
+            PlatformMutex_Lock( &pContext->PktRespMutex );
+            pContext->pktioReceiveDataLossEventCount++;
+            PlatformMutex_Unlock( &pContext->PktRespMutex );
+        }
+
         *pBytesRead = 0;
         pContext->partialDataRcvdLen = 0;
         pContext->pPktioReadPtr = NULL;
