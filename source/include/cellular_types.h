@@ -100,7 +100,10 @@ typedef enum CellularError
     CELLULAR_RESOURCE_CREATION_FAIL, /**< Resource creation for Cellular library failed. */
     CELLULAR_UNSUPPORTED,            /**< The operation is not supported. */
     CELLULAR_NOT_ALLOWED,            /**< The operation is not allowed. */
-    CELLULAR_UNKNOWN                 /**< Any other error other than the above mentioned ones. */
+    CELLULAR_UNKNOWN,                /**< Any other error other than the above mentioned ones. */
+    CELLULAR_FILE_UPLOAD_FAILURE,    /**< The supplied file updated failed. */
+    CELLULAR_FILE_ALREADY_EXISTS,    /**< The supplied file already exists. */
+    CELLULAR_FILE_NOT_FOUND,         /**< The supplied file could not be found. */
 } CellularError_t;
 
 /**
@@ -145,6 +148,7 @@ typedef enum CellularSimCardLockState
     CELLULAR_SIM_CARD_PUK,           /**< The cellular sim card in a lock state of puk(personal unlocking key). */
     CELLULAR_SIM_CARD_PIN2,          /**< The cellular sim card in a lock state of pin2. */
     CELLULAR_SIM_CARD_PUK2,          /**< The cellular sim card in a lock state of puk2. */
+    CELLULAR_SIM_CARD_PH_SIM_PIN,    /**< The cellular sim card in a lock state of ph-sim pin. */
     CELLULAR_SIM_CARD_PH_NET_PIN,    /**< The cellular sim card in a lock state of ph-net pin. */
     CELLULAR_SIM_CARD_PH_NET_PUK,    /**< The cellular sim card in a lock state of ph-net puk. */
     CELLULAR_SIM_CARD_PH_NETSUB_PIN, /**< The cellular sim card in a lock state of ph-netsub pin. */
@@ -228,6 +232,7 @@ typedef enum CellularModemEvent
 {
     CELLULAR_MODEM_EVENT_BOOTUP_OR_REBOOT, /**< Bootup or reboot modem event. */
     CELLULAR_MODEM_EVENT_POWERED_DOWN,     /**< Power down modem event. */
+    CELLULAR_MODEM_EVENT_PSM_TIMER,        /**< PSM timer start modem event. */
     CELLULAR_MODEM_EVENT_PSM_ENTER         /**< PSM enter modem event. */
 } CellularModemEvent_t;
 
@@ -282,7 +287,8 @@ typedef enum CellularSocketType
 typedef enum CellularSocketProtocol
 {
     CELLULAR_SOCKET_PROTOCOL_UDP,
-    CELLULAR_SOCKET_PROTOCOL_TCP
+    CELLULAR_SOCKET_PROTOCOL_TCP,
+    CELLULAR_SOCKET_PROTOCOL_SSL_OVER_TCP   /* Internal use only for SSL sockets. */
 } CellularSocketProtocol_t;
 
 /**
@@ -332,6 +338,180 @@ typedef enum CellularSocketOption
 
 /**
  * @ingroup cellular_datatypes_enums
+ * @brief SSL context option names.
+ */
+typedef enum CellularSSLContextOption
+{
+    CELLULAR_SSL_CONTEXT_OPTION_SSL_VERSION,       /**< Set SSL/TLS version. */
+    CELLULAR_SSL_CONTEXT_OPTION_CIPHER_SUITE,      /**< Set SSL/TLS cipher suite(s). */
+    CELLULAR_SSL_CONTEXT_OPTION_CA_CERT,           /**< Set SSL/TLS trusted CA certificate. */
+    CELLULAR_SSL_CONTEXT_OPTION_CLIENT_CERT,       /**< Set SSL/TLS client certificate. */
+    CELLULAR_SSL_CONTEXT_OPTION_CLIENT_KEY,        /**< Set SSL/TLS client private key. */
+    CELLULAR_SSL_CONTEXT_OPTION_AUTH_MODE,         /**< Set SSL/TLS authentication mode. */
+    CELLULAR_SSL_CONTEXT_OPTION_SSL_RESUMPTION,    /**< Set SSL/TLS resumption feature enable/disable. */
+    CELLULAR_SSL_CONTEXT_OPTION_SNI,               /**< Set SSL/TLS Server Name Indication feature enable/disable. */
+    CELLULAR_SSL_CONTEXT_OPTION_CHECK_HOST,        /**< Set SSL/TLS hostname validation feature enable/disable. (Subject Common Name [CN] matches specified host name. */
+    CELLULAR_SSL_CONTEXT_OPTION_IGNORE_LOCAL_TIME, /**< Set SSL/TLS ignore certificate validity check. */
+    CELLULAR_SSL_CONTEXT_OPTION_NEGOTIATE_TIME,    /**< Set SSL/TLS negotiation maximum timeout. */
+    CELLULAR_SSL_CONTEXT_OPTION_TLS_RENEGOTIATION, /**< Set TLS renegotiation support enable/disable. */
+    CELLULAR_SSL_CONTEXT_OPTION_DTLS_ENABLE,       /**< Set DTLS feature enable/disable. */
+    CELLULAR_SSL_CONTEXT_OPTION_DTLS_VERSION       /**< Set DTLS version. */
+} CellularSSLContextOption_t;
+
+/**
+ * @ingroup cellular_datatypes_enums
+ * @brief SSL version.
+ */
+typedef enum CellularSSLVersion
+{
+    CELLULAR_SSL_VERSION_SSL_3_0,       /**< SSL3.0 */
+    CELLULAR_SSL_VERSION_TLS_1_0,       /**< TLS1.0 */
+    CELLULAR_SSL_VERSION_TLS_1_1,       /**< TLS1.1 */
+    CELLULAR_SSL_VERSION_TLS_1_2,       /**< TLS1.2 */
+    CELLULAR_SSL_VERSION_ALL,           /**< Any SSL/TLS version. */
+} CellularSSLVersion_t;
+
+/**
+ * @ingroup cellular_datatypes_enums
+ * @brief SSL cipher suite(s).
+ */
+typedef uint64_t CellularSSLCipherSuite_t;      /**< Bitmask of cipher suites. */
+#define CELLULAR_SSL_CIPHER_SUITE_TLS_RSA_WITH_AES_256_CBC_SHA              ( 0x0000000000000001ULL )
+#define CELLULAR_SSL_CIPHER_SUITE_TLS_RSA_WITH_AES_128_CBC_SHA              ( 0x0000000000000002ULL )
+#define CELLULAR_SSL_CIPHER_SUITE_TLS_RSA_WITH_RC4_128_SHA                  ( 0x0000000000000004ULL )
+#define CELLULAR_SSL_CIPHER_SUITE_TLS_RSA_WITH_RC4_128_MD5                  ( 0x0000000000000008ULL )
+#define CELLULAR_SSL_CIPHER_SUITE_TLS_RSA_WITH_3DES_EDE_CBC_SHA             ( 0x0000000000000010ULL )
+#define CELLULAR_SSL_CIPHER_SUITE_TLS_RSA_WITH_AES_256_CBC_SHA256           ( 0x0000000000000020ULL )
+#define CELLULAR_SSL_CIPHER_SUITE_TLS_ECDH_ECDSA_WITH_RC4_128_SHA           ( 0x0000000000000040ULL )
+#define CELLULAR_SSL_CIPHER_SUITE_TLS_ECDH_ECDSA_WITH_3DES_EDE_CBC_SHA      ( 0x0000000000000080ULL )
+#define CELLULAR_SSL_CIPHER_SUITE_TLS_ECDH_ECDSA_WITH_AES_128_CBC_SHA       ( 0x0000000000000100ULL )
+#define CELLULAR_SSL_CIPHER_SUITE_TLS_ECDH_ECDSA_WITH_AES_256_CBC_SHA       ( 0x0000000000000200ULL )
+#define CELLULAR_SSL_CIPHER_SUITE_TLS_ECDHE_ECDSA_WITH_RC4_128_SHA          ( 0x0000000000000400ULL )
+#define CELLULAR_SSL_CIPHER_SUITE_TLS_ECDHE_ECDSA_WITH_3DES_EDE_CBC_SHA     ( 0x0000000000000800ULL )
+#define CELLULAR_SSL_CIPHER_SUITE_TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA      ( 0x0000000000001000ULL )
+#define CELLULAR_SSL_CIPHER_SUITE_TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA      ( 0x0000000000002000ULL )
+#define CELLULAR_SSL_CIPHER_SUITE_TLS_ECDHE_RSA_WITH_RC4_128_SHA            ( 0x0000000000004000ULL )
+#define CELLULAR_SSL_CIPHER_SUITE_TLS_ECDHE_RSA_WITH_3DES_EDE_CBC_SHA       ( 0x0000000000008000ULL )
+#define CELLULAR_SSL_CIPHER_SUITE_TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA        ( 0x0000000000010000ULL )
+#define CELLULAR_SSL_CIPHER_SUITE_TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA        ( 0x0000000000020000ULL )
+#define CELLULAR_SSL_CIPHER_SUITE_TLS_ECDH_RSA_WITH_RC4_128_SHA             ( 0x0000000000040000ULL )
+#define CELLULAR_SSL_CIPHER_SUITE_TLS_ECDH_RSA_WITH_3DES_EDE_CBC_SHA        ( 0x0000000000080000ULL )
+#define CELLULAR_SSL_CIPHER_SUITE_TLS_ECDH_RSA_WITH_AES_128_CBC_SHA         ( 0x0000000000100000ULL )
+#define CELLULAR_SSL_CIPHER_SUITE_TLS_ECDH_RSA_WITH_AES_256_CBC_SHA         ( 0x0000000000200000ULL )
+#define CELLULAR_SSL_CIPHER_SUITE_TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256   ( 0x0000000000400000ULL )
+#define CELLULAR_SSL_CIPHER_SUITE_TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384   ( 0x0000000000800000ULL )
+#define CELLULAR_SSL_CIPHER_SUITE_TLS_ECDH_ECDSA_WITH_AES_128_CBC_SHA256    ( 0x0000000001000000ULL )
+#define CELLULAR_SSL_CIPHER_SUITE_TLS_ECDH_ECDSA_WITH_AES_256_CBC_SHA384    ( 0x0000000002000000ULL )
+#define CELLULAR_SSL_CIPHER_SUITE_TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256     ( 0x0000000004000000ULL )
+#define CELLULAR_SSL_CIPHER_SUITE_TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384     ( 0x0000000008000000ULL )
+#define CELLULAR_SSL_CIPHER_SUITE_TLS_ECDH_RSA_WITH_AES_128_CBC_SHA256      ( 0x0000000010000000ULL )
+#define CELLULAR_SSL_CIPHER_SUITE_TLS_ECDH_RSA_WITH_AES_256_CBC_SHA384      ( 0x0000000020000000ULL )
+#define CELLULAR_SSL_CIPHER_SUITE_TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256   ( 0x0000000040000000ULL )
+#define CELLULAR_SSL_CIPHER_SUITE_TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256     ( 0x0000000080000000ULL )
+#define CELLULAR_SSL_CIPHER_SUITE_TLS_PSK_WITH_AES_128_CCM_8                ( 0x0000000100000000ULL )
+#define CELLULAR_SSL_CIPHER_SUITE_TLS_PSK_WITH_AES_128_CBC_SHA256           ( 0x0000000200000000ULL )
+#define CELLULAR_SSL_CIPHER_SUITE_SUPPORT_ALL                               ( 0xFFFFFFFFFFFFFFFFULL )
+#define CELLULAR_SSL_CIPHER_SUITE_INVALID                                   ( 0ULL )
+
+/**
+ * @ingroup cellular_datatypes_enums
+ * @brief SSL authentication mode.
+ */
+typedef enum CellularSSLAuthMode
+{
+    CELLULAR_SSL_AUTH_MODE_NONE,               /**< No authentication. */
+    CELLULAR_SSL_AUTH_MODE_SERVER,             /**< Perform server authentication. */
+    CELLULAR_SSL_AUTH_MODE_SERVER_AND_CLIENT,  /**< Perform server and client authentication if requested by the remote server. */
+} CellularSSLAuthMode_t;
+
+/**
+ * @ingroup cellular_datatypes_enums
+ * @brief SSL session resumption feature.
+ */
+typedef enum CellularSSLSessionResumption
+{
+    CELLULAR_SSL_SESSION_RESUME_DISABLE,        /**< Disable. */
+    CELLULAR_SSL_SESSION_RESUME_ENABLE,         /**< Enable. */
+} CellularSSLSessionResumption_t;
+
+/**
+ * @ingroup cellular_datatypes_enums
+ * @brief SSL Server Name Indication feature.
+ */
+typedef enum CellularSSLSNI
+{
+    CELLULAR_SSL_SNI_DISABLE,        /**< Disable. */
+    CELLULAR_SSL_SNI_ENABLE,         /**< Enable. */
+} CellularSSLSNI_t;
+
+/**
+ * @ingroup cellular_datatypes_enums
+ * @brief SSL hostname validation feature.
+ */
+typedef enum CellularSSLCheckHost
+{
+    CELLULAR_SSL_CHECK_HOST_DISABLE,           /**< Disable. */
+    CELLULAR_SSL_CHECK_HOST_ENABLE,            /**< Enable. */
+} CellularSSLCheckHost_t;
+
+/**
+ * @ingroup cellular_datatypes_enums
+ * @brief SSL ignore certificate validity check.
+ */
+typedef enum CellularSSLIgnoreLocaltime
+{
+    CELLULAR_SSL_IGNORE_LOCALTIME_OFF,           /**< Check certificate validity. */
+    CELLULAR_SSL_IGNORE_LOCALTIME_ON,            /**< Ignore localtime. */
+} CellularSSLIgnoreLocaltime_t;
+
+typedef uint32_t CellularSSLNegotiateTime_t;    /**< Unit: seconds */
+
+/**
+ * @ingroup cellular_datatypes_enums
+ * @brief TLS renegotiation support.
+ */
+typedef enum CellularTLSRenegotiation
+{
+    CELLULAR_TLS_RENEGOTIATION_DISABLE,         /**< Disable. */
+    CELLULAR_TLS_RENEGOTIATION_ENABLE,          /**< Enable. */
+} CellularTLSRenegotiation_t;
+
+/**
+ * @ingroup cellular_datatypes_enums
+ * @brief DTLS enable/disable.
+ */
+typedef enum CellularDTLSEnable
+{
+    CELLULAR_DTLS_DISABLE,        /**< Disable. */
+    CELLULAR_DTLS_ENABLE,         /**< Enable. */
+} CellularDTLSEnable_t;
+
+/**
+ * @ingroup cellular_datatypes_enums
+ * @brief DTLS enable/disable.
+ */
+typedef enum CellularDTLSVersion
+{
+    CELLULAR_DTLS_VERSION_DTLS_1_0,    /**< DTLS1.0 */
+    CELLULAR_DTLS_VERSION_DTLS_1_2,    /**< DTLS1.2 */
+    CELLULAR_DTLS_VERSION_BOTH,        /**< Support both versions. */
+} CellularDTLSVersion_t;
+
+/**
+ * @ingroup cellular_datatypes_enums
+ * @brief Cellular module communication flow control setting.
+ */
+typedef enum CellularModuleCommFlowControl
+{
+    CELLULAR_MODULE_COMM_FLOW_CONTROL_NONE,
+    CELLULAR_MODULE_COMM_FLOW_CONTROL_RTS,
+    CELLULAR_MODULE_COMM_FLOW_CONTROL_CTS,
+    CELLULAR_MODULE_COMM_FLOW_CONTROL_RTS_CTS,
+    CELLULAR_MODULE_COMM_FLOW_CONTROL_UNKNOWN,
+} CellularModuleCommFlowControl_t;
+
+/**
+ * @ingroup cellular_datatypes_enums
  * @brief packet Status Names.
  */
 typedef enum CellularPktStatus
@@ -366,6 +546,18 @@ typedef enum CellularATCommandType
     CELLULAR_AT_MULTI_DATA_WO_PREFIX, /**<  multiple line data response with or without a prefix. */
     CELLULAR_AT_NO_COMMAND            /**<  no command is waiting response. */
 } CellularATCommandType_t;
+
+typedef enum CellularPowerDownMode
+{
+    CELLULAR_POWER_DOWN_MODE_NORMAL,    /**<  Normal power-down (i.e. network disconnect, etc). */
+    CELLULAR_POWER_DOWN_MODE_IMMEDIATE  /**<  Immediate power-down. */
+} CellularPowerDownMode_t;
+
+typedef enum CellularPSMEnterMode
+{
+    CELLULAR_PSM_ENTER_MODE_NORMAL,    /**<  Enter PSM after T3324 expires. */
+    CELLULAR_PSM_ENTER_MODE_IMMEDIATE  /**<  Enter PSM immediately after the RRC connection release is received. */
+} CellularPSMEnterMode_t;
 
 /**
  * @ingroup cellular_datatypes_paramstructs
@@ -465,11 +657,24 @@ typedef struct CellularServiceStatus
 
 /**
  * @ingroup cellular_datatypes_paramstructs
+ * @brief Represents network service selection.
+ */
+typedef struct CellularServiceSelection
+{
+    CellularNetworkRegistrationMode_t networkRegistrationMode; /**< Network registration mode (auto/manual etc.). */
+    CellularOperatorNameFormat_t operatorNameFormat;           /**< Format of network operator name. */
+    CellularPlmnInfo_t operatorPlmn;                           /**< Network operator MCC and MNC information. Used if operatorNameFormat is numeric */
+    char operatorName[ CELLULAR_NETWORK_NAME_MAX_SIZE + 1 ];   /**< Network operator name. Used if operatorNameFormat is not numeric. Optionally can be returned if operatorNameFormat is numeric. */
+    CellularRat_t rat;                                         /**< Radio Access Technology (RAT). */
+} CellularServiceSelection_t;
+
+/**
+ * @ingroup cellular_datatypes_paramstructs
  * @brief Represents A singly-lined list of intermediate AT responses.
  */
 typedef struct CellularATCommandLine
 {
-    struct CellularATCommandLine * pNext; /**< The CellularATCommandLine structure pointer points to the next element of the liniked list. */
+    struct CellularATCommandLine * pNext; /**< The CellularATCommandLine structure pointer points to the next element of the linked list. */
     char * pLine;                         /**< The content of the at command. */
 } CellularATCommandLine_t;
 
@@ -561,6 +766,31 @@ typedef struct CellularPsmSettings
      */
     uint32_t activeTimeValue; /**< Active Time (T3324) value encoded as per spec (as shown above). */
 } CellularPsmSettings_t;
+
+/**
+ * @ingroup cellular_datatypes_paramstructs
+ * @brief Represents PSM configuration settings.
+ */
+typedef struct CellularPsmConfigSettings
+{
+    /*
+     * Condition to enter PSM: <threshold> less than PSM cycle (= T3412 - T3324).
+     */
+    uint32_t threshold; /**< Minimum threshold value of the PSM cycle (in seconds). */
+
+    /*
+     * Each bit is configured independently. Range: 0-15.
+     * Bit 0: PSM without network coordination
+     * Bit 1: Rel-12 PSM without context retention
+     * Bit 2: Rel-12 PSM with context retention
+     * Bit 3: PSM in-between eDRX cycles
+     * Bit 4: Reserved
+     * Bit 5: Reserved
+     * Bit 6: Reserved
+     * Bit 7: Reserved
+     */
+    uint8_t psmVersion; /**< Bitmask to indicate the PSM feature (1: Enable; 0: Disable) (as shown above). */
+} CellularPsmConfigSettings_t;
 
 /**
  * @ingroup cellular_datatypes_paramstructs
@@ -662,6 +892,27 @@ typedef struct CellularEidrxSettingsList
     CellularEidrxSettings_t eidrxList[ CELLULAR_EDRX_LIST_MAX_SIZE ]; /**<  Cellular e-I-DRX settings list. */
     uint8_t count;                                                    /**<  Cellular e-I-DRX settings list number. */
 } CellularEidrxSettingsList_t;
+
+/**
+ * @ingroup cellular_datatypes_paramstructs
+ * @brief Cellular represents socket receive statistics.
+ */
+typedef struct CellularSocketReceiveStatistics
+{
+    uint32_t totalReceiveLength;
+    uint32_t haveReadLength;
+    uint32_t unreadLength;
+} CellularSocketReceiveStatistics_t;
+
+/**
+ * @ingroup cellular_datatypes_paramstructs
+ * @brief Cellular represents file update results.
+ */
+typedef struct CellularFileUploadResult
+{
+    uint32_t uploadedFileLength;
+    uint16_t xorChecksum;
+} CellularFileUploadResult_t;
 
 /**
  * @ingroup cellular_datatypes_paramstructs
@@ -808,6 +1059,7 @@ typedef void ( * CellularSocketOpenCallback_t )( CellularUrcEvent_t urcEvent,
  * @param[in] pCallbackContext pCallbackContext parameter in
  * Cellular_SocketRegisterDataReadyCallback function.
  */
+ // FUTURE: Change callback to support indicating the amount of data ready
 typedef void ( * CellularSocketDataReadyCallback_t )( CellularSocketHandle_t socketHandle,
                                                       void * pCallbackContext );
 

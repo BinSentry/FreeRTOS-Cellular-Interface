@@ -678,6 +678,22 @@ CellularError_t _Cellular_IsValidPdn( uint8_t contextId )
 
 /*-----------------------------------------------------------*/
 
+CellularError_t _Cellular_IsValidSSLContext( uint8_t contextId )
+{
+    CellularError_t cellularStatus = CELLULAR_SUCCESS;
+
+    if( ( contextId > CELLULAR_SSL_CONTEXT_ID_MAX ) || ( contextId < CELLULAR_SSL_CONTEXT_ID_MIN ) )
+    {
+        LogError( ( "_Cellular_IsValidSSLContext: ContextId out of range %d",
+                contextId ) );
+        cellularStatus = CELLULAR_BAD_PARAMETER;
+    }
+
+    return cellularStatus;
+}
+
+/*-----------------------------------------------------------*/
+
 CellularError_t _Cellular_ConvertCsqSignalRssi( int16_t csqRssi,
                                                 int16_t * pRssiValue )
 {

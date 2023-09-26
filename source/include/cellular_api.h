@@ -211,6 +211,30 @@ CellularError_t Cellular_GetServiceStatus( CellularHandle_t cellularHandle,
                                            CellularServiceStatus_t * pServiceStatus );
 
 /**
+ * @brief Get network service selection.
+ *
+ * @param[in] cellularHandle The opaque cellular context pointer created by Cellular_Init.
+ * @param[out] pServiceSelection Out parameter to provide the network service selection.
+ *
+ * @return CELLULAR_SUCCESS if the operation is successful, otherwise an error
+ * code indicating the cause of the error.
+ */
+CellularError_t Cellular_GetServiceSelection( CellularHandle_t cellularHandle,
+                                              CellularServiceSelection_t * pServiceSelection );
+
+/**
+ * @brief Set network service selection.
+ *
+ * @param[in] cellularHandle The opaque cellular context pointer created by Cellular_Init.
+ * @param[in] pServiceSelection Network service selection to set.
+ *
+ * @return CELLULAR_SUCCESS if the operation is successful, otherwise an error
+ * code indicating the cause of the error.
+ */
+CellularError_t Cellular_SetServiceSelection( CellularHandle_t cellularHandle,
+                                              const CellularServiceSelection_t * pServiceSelection );
+
+/**
  * @brief Set PDN config for a PDN context.
  *
  * @param[in] cellularHandle The opaque cellular context pointer created by Cellular_Init.
@@ -291,15 +315,18 @@ CellularError_t Cellular_GetIPAddress( CellularHandle_t cellularHandle,
  *
  * @param[in] cellularHandle The opaque cellular context pointer created by Cellular_Init.
  * @param[in] contextId Context ID of the PDN context for which DNS needs to be set.
- * @param[in] pDnsServerAddress The address of the DNS server to set.
- * It should be a NULL terminated string.
+ * @param[in] pPrimaryDnsServerAddress The address of the primary DNS server to set.
+ * It should be a NULL terminated string and must be specified.
+ * @param[in] pSecondaryDnsServerAddress The address of the secondary DNS server to set.
+ * If specified it should be a NULL terminated string, but can be NULL.
  *
  * @return CELLULAR_SUCCESS if the operation is successful, otherwise an error
  * code indicating the cause of the error.
  */
 CellularError_t Cellular_SetDns( CellularHandle_t cellularHandle,
                                  uint8_t contextId,
-                                 const char * pDnsServerAddress );
+                                 const char * pPrimaryDnsServerAddress,
+                                 const char * pSecondaryDnsServerAddress );
 
 /**
  * @brief Register/Remove callback for Network Registration URC events.
@@ -404,6 +431,32 @@ CellularError_t Cellular_SetPsmSettings( CellularHandle_t cellularHandle,
                                          const CellularPsmSettings_t * pPsmSettings );
 
 /**
+ * @brief Get current PSM config settings.
+ *
+ * @param[in] cellularHandle The opaque cellular context pointer created by Cellular_Init.
+ * @param[out] pPsmConfigSettings Out parameter to provide the PSM config settings.
+ *
+ * @return CELLULAR_SUCCESS if the operation is successful, otherwise an error
+ * code indicating the cause of the error.
+ */
+CellularError_t Cellular_GetPsmConfigSettings( CellularHandle_t cellularHandle,
+                                               CellularPsmConfigSettings_t * pPsmConfigSettings );
+
+/**
+ * @brief Set PSM config settings.
+ *
+ * Set PSM threshold and supported version(s).
+ *
+ * @param[in] cellularHandle The opaque cellular context pointer created by Cellular_Init.
+ * @param[in] pPsmConfigSettings PSM config settings to set.
+ *
+ * @return CELLULAR_SUCCESS if the operation is successful, otherwise an error
+ * code indicating the cause of the error.
+ */
+CellularError_t Cellular_SetPsmConfigSettings( CellularHandle_t cellularHandle,
+                                               const CellularPsmConfigSettings_t * pPsmConfigSettings );
+
+/**
  * @brief Get current e-I-DRX settings.
  *
  * @param[in] cellularHandle The opaque cellular context pointer created by Cellular_Init.
@@ -476,6 +529,26 @@ CellularError_t Cellular_CreateSocket( CellularHandle_t cellularHandle,
                                        CellularSocketProtocol_t socketProtocol,
                                        CellularSocketHandle_t * pSocketHandle );
 
+
+/**
+ * @brief Create an SSL socket (over TCP).
+ *
+ * @param[in] cellularHandle The opaque cellular context pointer created by Cellular_Init.
+ * @param[in] pdnContextId pdn context id on which this socket needs to be created. The pdn
+ * context must be previously activated by Cellular_ActivatePdn function.
+ * @param[in] sslContextId SSL context id on which this SSL socket is created.
+ * @param[in] socketDomain Socket domain.
+ * @param[out] pSocketHandle Out parameter to provide the created handle.
+ *
+ * @return CELLULAR_SUCCESS if the operation is successful, otherwise an error
+ * code indicating the cause of the error.
+ */
+CellularError_t Cellular_CreateSSLSocket( CellularHandle_t cellularHandle,
+                                       uint8_t pdnContextId,
+                                       uint8_t sslContextId,
+                                       CellularSocketDomain_t socketDomain,
+                                       CellularSocketHandle_t * pSocketHandle );
+
 /**
  * @brief Connect to a remote socket.
  *
@@ -537,12 +610,41 @@ CellularError_t Cellular_SocketRecv( CellularHandle_t cellularHandle,
  *
  * @param[in] cellularHandle The opaque cellular context pointer created by Cellular_Init.
  * @param[in] socketHandle Socket handle returned from the Cellular_CreateSocket call.
+ * @param[in] removeSocketOnError Indicate whether to return error and leave socket, or remove socket on error.
  *
  * @return CELLULAR_SUCCESS if the operation is successful, otherwise an error
  * code indicating the cause of the error.
  */
 CellularError_t Cellular_SocketClose( CellularHandle_t cellularHandle,
-                                      CellularSocketHandle_t socketHandle );
+                                      CellularSocketHandle_t socketHandle,
+                                      bool removeSocketOnError );
+
+/**
+ * @brief Get last result code for socket command.
+ *
+ * @param[in] cellularHandle The opaque cellular context pointer created by Cellular_Init.
+ * @param[out] lastResultCode The output parameter to result the socket last result code.
+ * NOTE: result code is modem specific and meant for diagnostic purposes.
+ *
+ * @return CELLULAR_SUCCESS if the operation is successful, otherwise an error
+ * code indicating the cause of the error.
+ */
+CellularError_t Cellular_GetSocketLastResultCode( CellularHandle_t cellularHandle,
+                                                  uint32_t * lastResultCode );
+
+/**
+ * @brief Get socket/SSL receive statistics.
+ *
+ * @param[in] cellularHandle The opaque cellular context pointer created by Cellular_Init.
+ * @param[in] socketHandle Socket handle returned from the Cellular_CreateSocket call.
+ * @param[out] receiveStatistics The output parameter to result the socket receive statistics.
+ *
+ * @return CELLULAR_SUCCESS if the operation is successful, otherwise an error
+ * code indicating the cause of the error.
+ */
+CellularError_t Cellular_GetSocketReceiveStats( CellularHandle_t cellularHandle,
+                                                CellularSocketHandle_t socketHandle,
+                                                CellularSocketReceiveStatistics_t * receiveStatistics );
 
 /**
  * @brief Resolve a host name using Domain Name Service.
@@ -583,6 +685,24 @@ CellularError_t Cellular_SocketSetSockOpt( CellularHandle_t cellularHandle,
                                            CellularSocketOption_t option,
                                            const uint8_t * pOptionValue,
                                            uint32_t optionValueLength );
+
+/**
+ * @brief Set options for a SSL context.
+ *
+ * @param[in] cellularHandle The opaque cellular context pointer created by Cellular_Init.
+ * @param[in] sslContextId SSL context id on which this option is configured.
+ * @param[in] option SSL context option to set.
+ * @param[in] pOptionValue Buffer containing the SSL context option value.
+ * @param[in] optionValueLength Length of the value pointed to by pOptionValue.
+ *
+ * @return CELLULAR_SUCCESS if the operation is successful, otherwise an error
+ * code indicating the cause of the error.
+ */
+CellularError_t Cellular_SocketSetSSLOpt( CellularHandle_t cellularHandle,
+                                          uint8_t sslContextId,
+                                          CellularSSLContextOption_t option,
+                                          const uint8_t * pOptionValue,
+                                          uint32_t optionValueLength );
 
 /**
  * @brief Register Socket open callback on the socket.
@@ -638,6 +758,131 @@ CellularError_t Cellular_SocketRegisterClosedCallback( CellularHandle_t cellular
                                                        CellularSocketHandle_t socketHandle,
                                                        CellularSocketClosedCallback_t closedCallback,
                                                        void * pCallbackContext );
+
+/**
+ * @brief Upload a file to the modem.
+ *
+ * @param[in] cellularHandle The opaque cellular context pointer created by Cellular_Init.
+ * @param[in] pcFilename The name of the file to be uploaded.
+ * It should be a NULL terminated string.
+ * Note: recommend using DOS 8.3 file name format.
+ * @param[in] pFile The buffer containing that file data to be uploaded.
+ * @param[in] fileLength Length of the file data in the pData buffer.
+ * NOTE: must not exceed CELLULAR_MAX_SEND_DATA_LEN.
+ * @param[out] uploadedDataLength The output parameter to return the uploaded file data length.
+ * @param[out] xorChecksum The output parameter to return the uploaded file 16-bit XOR checksum.
+ * The 16-bit checksum is based on bitwise XOR. When the number of characters is odd, the last
+ * character is set as the high 8 bit, and the low 8 bit as 0, and then an XOR operator is used
+ * to calculate the checksum.
+ *
+ * @return CELLULAR_SUCCESS if the operation is successful, otherwise an error
+ * code indicating the cause of the error.
+ */
+CellularError_t Cellular_UploadFileToModem( CellularHandle_t cellularHandle,
+                                            const char * pcFilename,
+                                            const uint8_t * pFile,
+                                            uint32_t fileLength,
+                                            CellularFileUploadResult_t * fileUploadResult );
+
+/**
+ * @brief Delete a file on the modem.
+ *
+ * @param[in] cellularHandle The opaque cellular context pointer created by Cellular_Init.
+ * @param[in] pcFilename The name of the file to be uploaded.
+ * It should be a NULL terminated string.
+ *
+ * @return CELLULAR_SUCCESS if the operation is successful, otherwise an error
+ * code indicating the cause of the error.
+ */
+CellularError_t Cellular_DeleteFileOnModem( CellularHandle_t cellularHandle,
+                                            const char * pcFilename );
+
+/**
+ * @brief Calculate CRC-32 for a file on the modem.
+ *
+ * @param[in] cellularHandle The opaque cellular context pointer created by Cellular_Init.
+ * @param[in] pcFilename The name of the file.
+ * It should be a NULL terminated string.
+ * @param[out] crc32 The output parameter to return the file 32-bit CRC checksum.
+ *
+ * @return CELLULAR_SUCCESS if the operation is successful, otherwise an error
+ * code indicating the cause of the error.
+ */
+CellularError_t Cellular_GetModemFileCRC32( CellularHandle_t cellularHandle,
+                                            const char * pcFilename,
+                                            uint32_t * crc32 );
+
+/**
+ * @brief Get the module communication flow control settings.
+ *
+ * @param[in] cellularHandle The opaque cellular context pointer created by Cellular_Init.
+ * @param[out] flowControl The output parameter to return the communication flow control settings.
+ *
+ * @return CELLULAR_SUCCESS if the operation is successful, otherwise an error
+ * code indicating the cause of the error.
+ */
+CellularError_t Cellular_GetModuleFlowControlSetting( CellularHandle_t cellularHandle,
+                                                      CellularModuleCommFlowControl_t * flowControl );
+
+/**
+ * @brief Set the module communication flow control settings.
+ *
+ * @param[in] cellularHandle The opaque cellular context pointer created by Cellular_Init.
+ * @param[in] flowControl The communication flow control settings.
+ *
+ * @return CELLULAR_SUCCESS if the operation is successful, otherwise an error
+ * code indicating the cause of the error.
+ */
+CellularError_t Cellular_SetModuleFlowControlSetting( CellularHandle_t cellularHandle,
+                                                      CellularModuleCommFlowControl_t * flowControl );
+
+/**
+ * @brief Get the module communication baud rate setting.
+ *
+ * @param[in] cellularHandle The opaque cellular context pointer created by Cellular_Init.
+ * @param[out] baudRate The output parameter to return the communication baud rate (bps) setting.
+ *
+ * @return CELLULAR_SUCCESS if the operation is successful, otherwise an error
+ * code indicating the cause of the error.
+ */
+CellularError_t Cellular_GetModuleBaudRateSetting( CellularHandle_t cellularHandle,
+                                                   uint32_t * baudRate );
+
+/**
+ * @brief Set the module communication baud rate setting.
+ *
+ * @param[in] cellularHandle The opaque cellular context pointer created by Cellular_Init.
+ * @param[in] baudRate The communication baud rate (bps) setting.
+ *
+ * @return CELLULAR_SUCCESS if the operation is successful, otherwise an error
+ * code indicating the cause of the error.
+ */
+CellularError_t Cellular_SetModuleBaudRateSetting( CellularHandle_t cellularHandle,
+                                                   uint32_t baudRate );
+
+/**
+ * @brief Command the module to power down.
+ *
+ * @param[in] cellularHandle The opaque cellular context pointer created by Cellular_Init.
+ * @param[in] powerDownMode The type of power down to execute.
+ *
+ * @return CELLULAR_SUCCESS if the operation is successful, otherwise an error
+ * code indicating the cause of the error.
+ */
+CellularError_t Cellular_PowerDown( CellularHandle_t cellularHandle,
+                                    CellularPowerDownMode_t powerDownMode );
+
+/**
+ * @brief Set Power Saving Mode (PSM) entry mode.
+ *
+ * @param[in] cellularHandle The opaque cellular context pointer created by Cellular_Init.
+ * @param[in] psmEnterMode The type of PSM entry to execute.
+ *
+ * @return CELLULAR_SUCCESS if the operation is successful, otherwise an error
+ * code indicating the cause of the error.
+ */
+CellularError_t Cellular_SetPSMEntry( CellularHandle_t cellularHandle,
+                                      CellularPSMEnterMode_t psmEnterMode );
 
 /* *INDENT-OFF* */
 #ifdef __cplusplus

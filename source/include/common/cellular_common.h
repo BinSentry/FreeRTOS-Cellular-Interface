@@ -82,6 +82,13 @@ typedef struct CellularAtDataReq
                                   * end pattern instead of length in AT command
                                   * can make use of this variable. */
     uint32_t endPatternLen;      /**< End pattern length. */
+
+    /**< Only needed if response expected post data send. */    // FUTURE: These parameters below could be broken out into own typedef and shared with common items in CellularAtReq_t
+    CellularATCommandType_t atCmdType;                        /**< The At command type. */
+    const char * pAtRspPrefix;                                /**< The prefix of at command response. */
+    CellularATCommandResponseReceivedCallback_t respCallback; /**< The callback function #CellularATCommandResponseReceivedCallback_t. */
+    void * pRespCallbackData;                                 /**< The data pointer to the response callback data. */
+    uint16_t respCallbackDataLen;                             /**< The length of the response callback data pointer . */
 } CellularAtDataReq_t;
 
 /**
@@ -134,6 +141,9 @@ typedef struct CellularSocketContext
     /* Set using socket options. */
     uint32_t sendTimeoutMs; /**< Send timeout value in milliseconds. */
     uint32_t recvTimeoutMs; /**< Receive timeout value in milliseconds. */
+
+    /* Set for SSL sockets */
+    uint8_t sslContextId;       /**< SSL context ID used by SSL socket. */
 
     /* Set during socket connect. */
     CellularSocketAddress_t remoteSocketAddress; /**< Remote IP address and port. */
@@ -412,6 +422,16 @@ CellularSocketContext_t * _Cellular_GetSocketData( const CellularContext_t * pCo
 CellularError_t _Cellular_IsValidPdn( uint8_t contextId );
 
 /**
+ * @brief Check SSL context index validity.
+ *
+ * @param[in] contextId The SSL context index to check.
+ *
+ * @return CELLULAR_SUCCESS if the operation is successful, otherwise an error
+ * code indicating the cause of the error.
+ */
+CellularError_t _Cellular_IsValidSSLContext( uint8_t contextId );
+
+/**
  * @brief Convert CSQ command returned RSSI value.
  *
  * @param[in] csqRssi The CSQ command returned RSSI index.
@@ -565,7 +585,7 @@ CellularPktStatus_t _Cellular_TimeoutAtcmdDataSendRequestWithCallback( CellularC
  * @param[in] pContext The opaque cellular context pointer created by Cellular_Init.
  * @param[in] atReq The AT command data structure with send command response callback.
  * @param[in] dataReq The following data request after the at request.
- * @param[in] pktDataSendPrefixCallback The callback function to inidcate the data sending start.
+ * @param[in] pktDataSendPrefixCallback The callback function to indicate the data sending start.
  * @param[in] pCallbackContext The callback context pass to pktDataSendPrefixCallback function.
  * @param[in] atTimeoutMS The timeout value to wait for the AT command response from cellular modem.
  * @param[in] dataTimeoutMS The timeout value to wait for the data command response from cellular modem.

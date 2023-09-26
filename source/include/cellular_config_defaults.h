@@ -294,6 +294,16 @@
 #endif
 
 /**
+ * @brief Cellular file upload max file length.<br>
+ *
+ * <b>Possible values:</b>`Any positive integer`<br>
+ * <b>Default value (if undefined):</b> 4096
+ */
+#ifndef CELLULAR_CONFIG_FILE_UPLOAD_MAX_SIZE
+    #define CELLULAR_CONFIG_FILE_UPLOAD_MAX_SIZE    ( 4096U )
+#endif
+
+/**
  * @brief Cellular module support getHostByName.<br>
  *
  * <b>Possible values:</b>`0 or 1`<br>
@@ -438,6 +448,26 @@
       ( ( ( int32_t ) isdigit( ( ( int8_t ) ( inputChar ) ) ) ) == 0 ) && \
       ( ( inputChar ) != '_' ) &&                                         \
       ( !( CELLULAR_CHECK_IS_PREFIX_LEADING_CHAR( inputChar ) ) ) )
+#endif
+
+/**
+ * @brief Cellular SSL context ID min value.<br>
+ *
+ * <b>Possible values:</b>`Any positive integer`<br>
+ * <b>Default value (if undefined):</b> 0
+ */
+#ifndef CELLULAR_SSL_CONTEXT_ID_MIN
+#define CELLULAR_SSL_CONTEXT_ID_MIN    ( 0U )
+#endif
+
+/**
+ * @brief Cellular SSL context ID max value.<br>
+ *
+ * <b>Possible values:</b>`Any positive integer`<br>
+ * <b>Default value (if undefined):</b> 5
+ */
+#ifndef CELLULAR_SSL_CONTEXT_ID_MAX
+#define CELLULAR_SSL_CONTEXT_ID_MAX    ( 5U )
 #endif
 
 /**

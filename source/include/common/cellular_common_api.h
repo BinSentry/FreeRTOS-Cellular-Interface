@@ -123,6 +123,16 @@ CellularError_t Cellular_CommonCreateSocket( CellularHandle_t cellularHandle,
 
 /**
  * @brief This function is the common implementation of FreeRTOS Cellular Library API.
+ * Reference Cellular_CreateSSLSocket in cellular_api.h for definition.
+ */
+CellularError_t Cellular_CommonCreateSSLSocket( CellularHandle_t cellularHandle,
+                                                uint8_t pdnContextId,
+                                                uint8_t sslContextId,
+                                                CellularSocketDomain_t socketDomain,
+                                                CellularSocketHandle_t * pSocketHandle );
+
+/**
+ * @brief This function is the common implementation of FreeRTOS Cellular Library API.
  * Reference Cellular_SocketSetSockOpt in cellular_api.h for definition.
  */
 CellularError_t Cellular_CommonSocketSetSockOpt( CellularHandle_t cellularHandle,

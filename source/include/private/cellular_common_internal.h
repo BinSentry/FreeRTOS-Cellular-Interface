@@ -42,7 +42,7 @@
 
 /*-----------------------------------------------------------*/
 
-#define PKTIO_READ_BUFFER_SIZE     ( 1600U )      /* This should be larger than TCP packet size. */
+#define PKTIO_READ_BUFFER_SIZE     ( 3200U )      /* This should be larger than TCP packet size. */     // FUTURE: Make this configurable just like CELLULAR_AT_CMD_MAX_SIZE
 #define PKTIO_WRITE_BUFFER_SIZE    ( CELLULAR_AT_CMD_MAX_SIZE )
 
 /*-----------------------------------------------------------*/
@@ -144,6 +144,7 @@ struct CellularContext
     _atRespType_t recvdMsgType;                                        /**<  The received AT response type. */
     CellularUndefinedRespCallback_t undefinedRespCallback;             /**<  Undefined response callback function. */
     void * pUndefinedRespCBContext;                                    /**<  The pCallbackContext passed to CellularUndefinedRespCallback_t. */
+    uint32_t pktioReceiveDataLossEventCount;                           /**<  Count of the number of times the pktioReadBuf saturated resulting in receive data loss. */
 
     /* PktIo data handling. */
     uint32_t dataLength;                                              /**<  The data length in pLine. */

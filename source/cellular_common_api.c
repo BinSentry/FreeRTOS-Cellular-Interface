@@ -410,6 +410,53 @@ CellularError_t Cellular_CommonCreateSocket( CellularHandle_t cellularHandle,
 
 /*-----------------------------------------------------------*/
 
+CellularError_t Cellular_CommonCreateSSLSocket( CellularHandle_t cellularHandle,
+                                                uint8_t pdnContextId,
+                                                uint8_t sslContextId,
+                                                CellularSocketDomain_t socketDomain,
+                                                CellularSocketHandle_t * pSocketHandle )
+{
+    CellularContext_t * pContext = ( CellularContext_t * ) cellularHandle;
+    CellularError_t cellularStatus = CELLULAR_SUCCESS;
+
+    /* pContext is checked in _Cellular_CheckLibraryStatus function. */
+    cellularStatus = _Cellular_CheckLibraryStatus( pContext );
+
+    if( cellularStatus != CELLULAR_SUCCESS )
+    {
+        LogDebug( ( "_Cellular_CheckLibraryStatus failed" ) );
+    }
+    else if( pSocketHandle == NULL )
+    {
+        LogError( ( "pSocketHandle is NULL" ) );
+        cellularStatus = CELLULAR_BAD_PARAMETER;
+    }
+    else if( _Cellular_IsValidPdn( pdnContextId ) != CELLULAR_SUCCESS )
+    {
+        LogError( ( "_Cellular_IsValidPdn failed" ) );
+        cellularStatus = CELLULAR_INVALID_HANDLE;
+    }
+    else if( _Cellular_IsValidSSLContext( sslContextId ) != CELLULAR_SUCCESS )
+    {
+        LogError( ( "_Cellular_IsValidSSLContext failed" ) );
+        cellularStatus = CELLULAR_INVALID_HANDLE;
+    }
+    else
+    {
+        cellularStatus = _Cellular_CreateSocketData( pContext, pdnContextId,
+                                                     socketDomain, CELLULAR_SOCKET_TYPE_STREAM,
+                                                     CELLULAR_SOCKET_PROTOCOL_SSL_OVER_TCP, pSocketHandle );
+        if (cellularStatus == CELLULAR_SUCCESS && pSocketHandle != NULL)
+        {
+            (*pSocketHandle)->sslContextId = sslContextId;
+        }
+    }
+
+    return cellularStatus;
+}
+
+/*-----------------------------------------------------------*/
+
 CellularError_t Cellular_CommonSocketSetSockOpt( CellularHandle_t cellularHandle,
                                                  CellularSocketHandle_t socketHandle,
                                                  CellularSocketOptionLevel_t optionLevel,

@@ -227,7 +227,8 @@ static CellularPktStatus_t _Cellular_AtcmdRequestTimeoutWithCallbackRaw( Cellula
 
         if( pktStatus != CELLULAR_PKT_STATUS_OK )
         {
-            LogError( ( "Can't send req packet" ) );
+            LogError( ( "Can't send req packet AT command %s, pktStatus %d.",
+                        atReq.pAtCmd, pktStatus ) );
         }
         else
         {
@@ -272,7 +273,7 @@ static CellularPktStatus_t _Cellular_DataSendWithTimeoutDelayRaw( CellularContex
 {
     CellularPktStatus_t respCode = CELLULAR_PKT_STATUS_OK;
     CellularPktStatus_t pktStatus = CELLULAR_PKT_STATUS_OK;
-    BaseType_t qStatus = pdFALSE;
+    BaseType_t qStatus = pdFALSE, pktioCmdTypeSet = pdFALSE;
     uint32_t sendEndPatternLen = 0U;
 
     if( ( dataReq.pData == NULL ) || ( dataReq.pSentDataLength == NULL ) )
@@ -284,10 +285,22 @@ static CellularPktStatus_t _Cellular_DataSendWithTimeoutDelayRaw( CellularContex
     {
         LogDebug( ( ">>>>>Start sending Data <<<<<" ) );
 
-        /* Send the packet. Data send is regarded as CELLULAR_AT_NO_RESULT. Only
-         * success or error token is expected in the result. */
+        /* Send the packet and look for response if specified. */
         PlatformMutex_Lock( &pContext->PktRespMutex );
-        pContext->PktioAtCmdType = CELLULAR_AT_NO_RESULT;
+        pContext->PktioAtCmdType = dataReq.atCmdType;
+        pContext->pktRespCB = dataReq.respCallback;
+        pContext->pPktUsrData = dataReq.pRespCallbackData;
+        pContext->PktUsrDataLen = ( uint16_t ) dataReq.respCallbackDataLen;
+        if( dataReq.pAtRspPrefix != NULL )
+        {
+            ( void ) strncpy( pContext->pktRespPrefixBuf, dataReq.pAtRspPrefix, CELLULAR_CONFIG_MAX_PREFIX_STRING_LENGTH );
+            pContext->pRespPrefix = pContext->pktRespPrefixBuf;
+        }
+        else
+        {
+            pContext->pRespPrefix = NULL;
+        }
+        pktioCmdTypeSet = pdTRUE;
         PlatformMutex_Unlock( &pContext->PktRespMutex );
 
         *dataReq.pSentDataLength = _Cellular_PktioSendData( pContext, dataReq.pData, dataReq.dataLen );
@@ -341,9 +354,21 @@ static CellularPktStatus_t _Cellular_DataSendWithTimeoutDelayRaw( CellularContex
         /* Set AT command type to CELLULAR_AT_NO_COMMAND for timeout case here. */
         PlatformMutex_Lock( &pContext->PktRespMutex );
         pContext->PktioAtCmdType = CELLULAR_AT_NO_COMMAND;
+        pContext->pktRespCB = NULL;
+        pktioCmdTypeSet = pdFALSE;
         PlatformMutex_Unlock( &pContext->PktRespMutex );
 
         LogDebug( ( "<<<<<Exit sending data ret[%d]>>>>>", pktStatus ) );
+    }
+
+    if( pktioCmdTypeSet != pdFALSE )
+    {
+        PlatformMutex_Lock( &pContext->PktRespMutex );
+        pContext->PktioAtCmdType = CELLULAR_AT_NO_COMMAND;
+        pContext->pktRespCB = NULL;
+        pktioCmdTypeSet = pdFALSE;
+        PlatformMutex_Unlock( &pContext->PktRespMutex );
+        LogDebug( ( "pkt_recv status=%d, PktioAtCmdType and pktRespCB left set, cleaning up", pktStatus ) );
     }
 
     return pktStatus;
@@ -638,6 +663,8 @@ CellularPktStatus_t _Cellular_TimeoutAtcmdDataRecvRequestWithCallback( CellularC
                                                                        void * pCallbackContext )
 {
     CellularPktStatus_t pktStatus = CELLULAR_PKT_STATUS_OK;
+    uint32_t startRecvDataLossEventCount = 0;
+    uint32_t endRecvDataLossEventCount = 0;
 
     if( pContext == NULL )
     {
@@ -652,17 +679,25 @@ CellularPktStatus_t _Cellular_TimeoutAtcmdDataRecvRequestWithCallback( CellularC
         PlatformMutex_Lock( &pContext->PktRespMutex );
         pContext->pktDataPrefixCB = pktDataPrefixCallback;
         pContext->pDataPrefixCBContext = pCallbackContext;
+        startRecvDataLossEventCount = pContext->pktioReceiveDataLossEventCount;
         PlatformMutex_Unlock( &pContext->PktRespMutex );
 
         pktStatus = _Cellular_AtcmdRequestTimeoutWithCallbackRaw( pContext, atReq, timeoutMS );
 
         /* Clear the data receive prefix. */
         PlatformMutex_Lock( &pContext->PktRespMutex );
+        endRecvDataLossEventCount = pContext->pktioReceiveDataLossEventCount;
         pContext->pktDataPrefixCB = NULL;
         pContext->pDataPrefixCBContext = NULL;
         PlatformMutex_Unlock( &pContext->PktRespMutex );
 
         _Cellular_PktHandlerReleasePktRequestMutex( pContext );
+
+        if( startRecvDataLossEventCount != endRecvDataLossEventCount )
+        {
+            /* Override existing packet status to indicate critical error */
+            pktStatus = CELLULAR_PKT_STATUS_FAILURE;
+        }
     }
 
     return pktStatus;
@@ -680,6 +715,8 @@ CellularPktStatus_t _Cellular_AtcmdDataSend( CellularContext_t * pContext,
                                              uint32_t interDelayMS )
 {
     CellularPktStatus_t pktStatus = CELLULAR_PKT_STATUS_OK;
+    uint32_t startRecvDataLossEventCount = 0;
+    uint32_t endRecvDataLossEventCount = 0;
 
     if( pContext == NULL )
     {
@@ -694,12 +731,14 @@ CellularPktStatus_t _Cellular_AtcmdDataSend( CellularContext_t * pContext,
         PlatformMutex_Lock( &pContext->PktRespMutex );
         pContext->pktDataSendPrefixCB = pktDataSendPrefixCallback;
         pContext->pDataSendPrefixCBContext = pCallbackContext;
+        startRecvDataLossEventCount = pContext->pktioReceiveDataLossEventCount;
         PlatformMutex_Unlock( &pContext->PktRespMutex );
 
         pktStatus = _Cellular_AtcmdRequestTimeoutWithCallbackRaw( pContext, atReq, atTimeoutMS );
 
         /* Clear the data send prefix callback. */
         PlatformMutex_Lock( &pContext->PktRespMutex );
+        endRecvDataLossEventCount = pContext->pktioReceiveDataLossEventCount;
         pContext->pDataSendPrefixCBContext = NULL;
         pContext->pktDataSendPrefixCB = NULL;
         PlatformMutex_Unlock( &pContext->PktRespMutex );
@@ -710,6 +749,12 @@ CellularPktStatus_t _Cellular_AtcmdDataSend( CellularContext_t * pContext,
         }
 
         _Cellular_PktHandlerReleasePktRequestMutex( pContext );
+
+        if( startRecvDataLossEventCount != endRecvDataLossEventCount )
+        {
+            /* Override existing packet status to indicate critical error */
+            pktStatus = CELLULAR_PKT_STATUS_FAILURE;
+        }
     }
 
     return pktStatus;
