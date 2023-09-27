@@ -999,7 +999,7 @@ typedef struct CellularNetworkOperatorModeConfig
 {
     /**<  Network operator mode manually selected or automatically selected by modem if in AUTO mode. */
     CellularNetworkOperatorMode_t networkOperatorMode;
-    /**<  Network operator mode is selected in accordance  with IMSI value of the currently used (U)SIM. */
+    /**<  Network operator mode is selected in accordance with IMSI value of the currently used (U)SIM. */
     bool automaticSelection;
 } CellularNetworkOperatorModeConfig_t;
 
