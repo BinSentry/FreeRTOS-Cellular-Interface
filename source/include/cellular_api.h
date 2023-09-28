@@ -924,6 +924,15 @@ CellularError_t Cellular_ConvertLTEBandMaskToHexString( const CellularLTEBandMas
                                                         unsigned int bandHexStringMaxLength );
 
 /**
+ * @brief Determine if specified LTE frequency bandmask includes at least one band.
+ *
+ * @param[in] pFrequencyBands The LTE frequency band mask.
+ *
+ * @return true if at least one band selected, otherwise false.
+ */
+bool Cellular_IsLTEBandMaskNonZero( const CellularLTEBandMask_t * pFrequencyBands );
+
+/**
  * @brief Get Network Operator Mode.
  *
  * @param[in] cellularHandle The opaque cellular context pointer created by Cellular_Init.
