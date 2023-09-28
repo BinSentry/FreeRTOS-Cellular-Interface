@@ -884,6 +884,69 @@ CellularError_t Cellular_PowerDown( CellularHandle_t cellularHandle,
 CellularError_t Cellular_SetPSMEntry( CellularHandle_t cellularHandle,
                                       CellularPSMEnterMode_t psmEnterMode );
 
+/**
+ * @brief Get LTE Frequency Bands.
+ *
+ * @param[in] cellularHandle The opaque cellular context pointer created by Cellular_Init.
+ * @param[out] pFrequencyBands The bitmask of frequency bands.
+ *
+ * @return CELLULAR_SUCCESS if the operation is successful, otherwise an error
+ * code indicating the cause of the error.
+ */
+CellularError_t Cellular_GetLTEFrequencyBands( CellularHandle_t cellularHandle,
+                                               CellularLTEBandMask_t * pFrequencyBands );
+
+/**
+ * @brief Set LTE Frequency Bands.
+ *
+ * @param[in] cellularHandle The opaque cellular context pointer created by Cellular_Init.
+ * @param[in] pFrequencyBands The bitmask of frequency bands.
+ *
+ * @return CELLULAR_SUCCESS if the operation is successful, otherwise an error
+ * code indicating the cause of the error.
+ */
+CellularError_t Cellular_SetLTEFrequencyBands( CellularHandle_t cellularHandle,
+                                               const CellularLTEBandMask_t * pFrequencyBands );
+
+/**
+ * @brief Generate hex string representation of LTE Frequency Bands. NOTE: Prefix of "0x" is not applied and string
+ * starts with highest frequency bands first.
+ *
+ * @param[in] pLTEBandMask The LTE frequency band mask.
+ * @param[out] pBandHexString The buffer to place the hex string into.
+ * @param[in] bandHexStringMaxLength The maximum buffer size including the null terminator character.
+ *
+ * @return CELLULAR_SUCCESS if the operation is successful, otherwise an error
+ * code indicating the cause of the error.
+ */
+CellularError_t Cellular_ConvertLTEBandMaskToHexString( const CellularLTEBandMask_t * pLTEBandMask,
+                                                        char * pBandHexString,
+                                                        unsigned int bandHexStringMaxLength );
+
+/**
+ * @brief Get Network Operator Mode.
+ *
+ * @param[in] cellularHandle The opaque cellular context pointer created by Cellular_Init.
+ * @param[out] pNetworkOperatorModeConfig The network operator mode configuration.
+ *
+ * @return CELLULAR_SUCCESS if the operation is successful, otherwise an error
+ * code indicating the cause of the error.
+ */
+CellularError_t Cellular_GetNetworkOperatorMode( CellularHandle_t cellularHandle,
+                                                 CellularNetworkOperatorModeConfig_t * pNetworkOperatorModeConfig );
+
+/**
+ * @brief Set Network Operator Mode.
+ *
+ * @param[in] cellularHandle The opaque cellular context pointer created by Cellular_Init.
+ * @param[in] networkOperatorMode The network operator mode to set.
+ *
+ * @return CELLULAR_SUCCESS if the operation is successful, otherwise an error
+ * code indicating the cause of the error.
+ */
+CellularError_t Cellular_SetNetworkOperatorMode( CellularHandle_t cellularHandle,
+                                                 CellularNetworkOperatorMode_t networkOperatorMode );
+
 /* *INDENT-OFF* */
 #ifdef __cplusplus
     }

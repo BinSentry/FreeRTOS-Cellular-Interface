@@ -547,17 +547,38 @@ typedef enum CellularATCommandType
     CELLULAR_AT_NO_COMMAND            /**<  no command is waiting response. */
 } CellularATCommandType_t;
 
+/**
+ * @ingroup cellular_datatypes_enums
+ * @brief Represents Power Down modes.
+ */
 typedef enum CellularPowerDownMode
 {
     CELLULAR_POWER_DOWN_MODE_NORMAL,    /**<  Normal power-down (i.e. network disconnect, etc). */
     CELLULAR_POWER_DOWN_MODE_IMMEDIATE  /**<  Immediate power-down. */
 } CellularPowerDownMode_t;
 
+/**
+ * @ingroup cellular_datatypes_enums
+ * @brief Represents PSM Enter modes.
+ */
 typedef enum CellularPSMEnterMode
 {
     CELLULAR_PSM_ENTER_MODE_NORMAL,    /**<  Enter PSM after T3324 expires. */
     CELLULAR_PSM_ENTER_MODE_IMMEDIATE  /**<  Enter PSM immediately after the RRC connection release is received. */
 } CellularPSMEnterMode_t;
+
+/**
+ * @ingroup cellular_datatypes_enums
+ * @brief Represents Network Operator mode which places network operator specific requirements defined on top of 3GPP requirements.
+ */
+typedef enum CellularNetworkOperatorMode
+{
+    CELLULAR_NETWORK_OPERATOR_MODE_AUTO,        /**<  Automatically select mode from SIM card. */
+    CELLULAR_NETWORK_OPERATOR_MODE_DEFAULT,     /**<  Default 3GPP compliant mode. */
+    CELLULAR_NETWORK_OPERATOR_MODE_ATT,         /**<  AT&T. */
+    CELLULAR_NETWORK_OPERATOR_MODE_VERIZON,     /**<  Verizon. */
+    CELLULAR_NETWORK_OPERATOR_MODE_UNKNOWN      /**<  Network operator mode unknown. */
+} CellularNetworkOperatorMode_t;
 
 /**
  * @ingroup cellular_datatypes_paramstructs
@@ -958,6 +979,29 @@ typedef struct CellularSocketAddress
     CellularIPAddress_t ipAddress; /**< IP address. */
     uint16_t port;                 /**< Port number. */
 } CellularSocketAddress_t;
+
+/**
+ * @ingroup cellular_datatypes_paramstructs
+ * @brief Represents set of LTE bands.
+ *        NOTE: First bit (asBytes[0] bit 7) represents LTE band 128,
+ *              Last bit (asBytes[15] bit 0) represents LTE band 1.
+ */
+typedef struct CellularLTEBandMask {
+    uint8_t asBytes[16];
+} __attribute__((packed)) CellularLTEBandMask_t;
+
+/**
+ * @ingroup cellular_datatypes_paramstructs
+ * @brief Represents network operator mode configuration which consists of network operator mode and whether mode was
+ *        automatically selected.
+ */
+typedef struct CellularNetworkOperatorModeConfig
+{
+    /**<  Network operator mode manually selected or automatically selected by modem if in AUTO mode. */
+    CellularNetworkOperatorMode_t networkOperatorMode;
+    /**<  Network operator mode is selected in accordance with IMSI value of the currently used (U)SIM. */
+    bool automaticSelection;
+} CellularNetworkOperatorModeConfig_t;
 
 /**
  * @ingroup cellular_datatypes_functionpointers
