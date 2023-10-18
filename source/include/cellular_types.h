@@ -55,6 +55,31 @@
 #define CELLULAR_INVALID_SIGNAL_BAR_VALUE    ( 0xFFU )
 
 /**
+ * @ingroup cellular_datatypes_paramstructs
+ * @brief Invalid LTE band.
+ */
+#define CELLULAR_INVALID_LTE_BAND            ( 0U )
+
+/**
+ * @ingroup cellular_datatypes_paramstructs
+ * @brief Invalid LTE channel ID.
+ */
+#define CELLULAR_INVALID_LTE_CHANNEL_ID      ( 0U )
+
+/**
+ * @ingroup cellular_datatypes_paramstructs
+ * @brief Invalid tracking area code.
+ */
+#define CELLULAR_INVALID_TRACKING_AREA_CODE  ( 0U )
+
+/**
+ * @ingroup cellular_datatypes_paramstructs
+ * @brief Invalid cell ID.
+ */
+#define CELLULAR_INVALID_CELL_ID             ( 0U )
+
+
+/**
  * @ingroup cellular_datatypes_handles
  * @brief Opaque Cellular context structure.
  */
@@ -1002,6 +1027,30 @@ typedef struct CellularNetworkOperatorModeConfig
     /**<  Network operator mode is selected in accordance with IMSI value of the currently used (U)SIM. */
     bool automaticSelection;
 } CellularNetworkOperatorModeConfig_t;
+
+/**
+ * @ingroup cellular_datatypes_paramstructs
+ * @brief Represents the cellular modem module temperatures in Celsius. CELLULAR_INVALID_SIGNAL_VALUE used if invalid/unsupported.
+ */
+typedef struct CellularTemperatures
+{
+    int16_t temperature1Celsius;
+    int16_t temperature2Celsius;
+    int16_t temperature3Celsius;
+} CellularTemperatures_t;
+
+/**
+ * @ingroup cellular_datatypes_paramstructs
+ * @brief Represents the cellular LTE network information.
+ */
+typedef struct CellularLTENetworkInfo
+{
+    CellularPlmnInfo_t plmnInfo;                              /**< Registered MCC and MNC information. */
+    uint16_t trackingAreaCode;                                /**< Tracking area code, CELLULAR_INVALID_TRACKING_AREA_CODE if unknown or not connected. */
+    uint32_t cellId;                                          /**< E-UTRAN cell ID, CELLULAR_INVALID_CELL_ID if unknown or not connected. */
+    uint16_t lteBand;                                         /**< LTE band in use, CELLULAR_INVALID_LTE_BAND if unknown or not connected. */
+    uint16_t lteChannelId;                                    /**< LTE channel in use, CELLULAR_INVALID_LTE_CHANNEL_ID if unknown or not connected. */
+} CellularLTENetworkInfo_t;
 
 /**
  * @ingroup cellular_datatypes_functionpointers
