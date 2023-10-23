@@ -956,6 +956,30 @@ CellularError_t Cellular_GetNetworkOperatorMode( CellularHandle_t cellularHandle
 CellularError_t Cellular_SetNetworkOperatorMode( CellularHandle_t cellularHandle,
                                                  CellularNetworkOperatorMode_t networkOperatorMode );
 
+/**
+ * @brief Get Modem Temperatures (up to 3).
+ *
+ * @param[in] cellularHandle The opaque cellular context pointer created by Cellular_Init.
+ * @param[out] pTemperatures The modem temperatures.
+ *
+ * @return CELLULAR_SUCCESS if the operation is successful, otherwise an error
+ * code indicating the cause of the error.
+ */
+CellularError_t Cellular_GetModemTemperatures( CellularHandle_t cellularHandle,
+                                               CellularTemperatures_t * pTemperatures );
+
+/**
+ * @brief Get Cellular LTE Network Info.
+ *
+ * @param[in] cellularHandle The opaque cellular context pointer created by Cellular_Init.
+ * @param[out] pLTENetworkInfo The LTE network information.
+ *
+ * @return CELLULAR_SUCCESS if the operation is successful, otherwise an error
+ * code indicating the cause of the error.
+ */
+CellularError_t Cellular_GetLTENetworkInfo( CellularHandle_t cellularHandle,
+                                            CellularLTENetworkInfo_t * pLTENetworkInfo );
+
 /* *INDENT-OFF* */
 #ifdef __cplusplus
     }
