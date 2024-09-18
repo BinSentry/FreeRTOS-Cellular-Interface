@@ -235,6 +235,22 @@ CellularError_t Cellular_SetServiceSelection( CellularHandle_t cellularHandle,
                                               const CellularServiceSelection_t * pServiceSelection );
 
 /**
+ * @brief Get PDN config for a PDN context.
+ *
+ * @param[in] cellularHandle The opaque cellular context pointer created by Cellular_Init.
+ * @param[in] contextId Context ID of the PDN to set the config for. Context ID value
+ * should be in range between CELLULAR_PDN_CONTEXT_ID_MIN and CELLULAR_PDN_CONTEXT_ID_MAX.
+ * The context ID with specified PDN config will be used with other CELLULAR APIs.
+ * @param[out] pPdnConfig Out parameter to provide the PDN config.
+ *
+ * @return CELLULAR_SUCCESS if the operation is successful, otherwise an error
+ * code indicating the cause of the error.
+ */
+CellularError_t Cellular_GetPdnConfig( CellularHandle_t cellularHandle,
+                                       uint8_t contextId,
+                                       CellularPdnConfig_t * pPdnConfig );
+
+/**
  * @brief Set PDN config for a PDN context.
  *
  * @param[in] cellularHandle The opaque cellular context pointer created by Cellular_Init.
