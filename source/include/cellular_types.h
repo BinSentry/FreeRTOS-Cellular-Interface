@@ -41,6 +41,7 @@
 /* Includes for standard bool and int. */
 #include <stdbool.h>
 #include <stdint.h>
+#include <assert.h>
 
 /**
  * @ingroup cellular_datatypes_paramstructs
@@ -938,6 +939,16 @@ typedef struct CellularEidrxSettingsList
     CellularEidrxSettings_t eidrxList[ CELLULAR_EDRX_LIST_MAX_SIZE ]; /**<  Cellular e-I-DRX settings list. */
     uint8_t count;                                                    /**<  Cellular e-I-DRX settings list number. */
 } CellularEidrxSettingsList_t;
+
+/**
+ * @ingroup cellular_datatypes_paramstructs
+ * @brief Cellular Represents band scan priority Lists.
+*/
+typedef struct CellularBandScanPriorityList
+{
+    uint8_t bandScanList[ CELLULAR_BAND_SCAN_PRIORITY_LIST_MAX_SIZE ]; /**<  Cellular band scan priority list. */
+    uint8_t count;                                                     /**<  Cellular band scan priority list number. */
+} CellularBandScanPriorityList_t;
 
 /**
  * @ingroup cellular_datatypes_paramstructs
