@@ -41,7 +41,6 @@
 /* Includes for standard bool and int. */
 #include <stdbool.h>
 #include <stdint.h>
-#include <assert.h>
 
 /**
  * @ingroup cellular_datatypes_paramstructs
