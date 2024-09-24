@@ -244,6 +244,16 @@
 #endif
 
 /**
+ * @brief Cellular band priority scan list max size.<br>
+ *
+ * <b>Possible values:</b>`Any positive integer`<br>
+ * <b>Default value (if undefined):</b> 4
+ */
+#ifndef CELLULAR_BAND_SCAN_PRIORITY_LIST_MAX_SIZE
+#define CELLULAR_BAND_SCAN_PRIORITY_LIST_MAX_SIZE    ( 35U )
+#endif
+
+/**
  * @brief Cellular PDN context ID min value.<br>
  *
  * <b>Possible values:</b>`Any positive integer`<br>

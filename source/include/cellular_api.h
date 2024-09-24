@@ -996,6 +996,44 @@ CellularError_t Cellular_GetModemTemperatures( CellularHandle_t cellularHandle,
 CellularError_t Cellular_GetLTENetworkInfo( CellularHandle_t cellularHandle,
                                             CellularLTENetworkInfo_t * pLTENetworkInfo );
 
+/**
+ * @brief Get Band Scan Priority List.
+ *
+ * @param[in] cellularHandle The opaque cellular context pointer created by Cellular_Init.
+ * @param[out] pBandScanPriorityList The priority list of bands to scan.
+ *
+ * @return CELLULAR_SUCCESS if the operation is successful, otherwise an error
+ * code indicating the cause of the error.
+ */
+CellularError_t Cellular_GetBandScanPriorityList( CellularHandle_t cellularHandle,
+                                                  CellularBandScanPriorityList_t * pBandScanPriorityList );
+
+/**
+ * @brief Set Band Scan Priority List.
+ *
+ * @param[in] cellularHandle The opaque cellular context pointer created by Cellular_Init.
+ * @param[in] pBandScanPriorityList The priority list of bands to scan.
+ *
+ * @return CELLULAR_SUCCESS if the operation is successful, otherwise an error
+ * code indicating the cause of the error.
+ */
+CellularError_t Cellular_SetBandScanPriorityList( CellularHandle_t cellularHandle,
+                                                  const CellularBandScanPriorityList_t * pBandScanPriorityList );
+
+/**
+ * @brief Create string from band scan priority list struct (CellularBandScanPriorityList_t).
+ *
+ * @param[in] pBandScanPriorityList Structure containing priority list of bands to scan.
+ * @param[out] out_pBandScanPriorityListString Pointer to memory to place band scan priority list string.
+ * @param[in] maxStringLength Maximum length of string memory (includes null terminator).
+ *
+ * @return CELLULAR_SUCCESS if the operation is successful, otherwise an error
+ * code indicating the cause of the error.
+ */
+CellularError_t Cellular_BuildBandScanPriorityListString( const CellularBandScanPriorityList_t * pBandScanPriorityList,
+                                                          char * out_pBandScanPriorityListString,
+                                                          unsigned int maxStringLength );
+
 /* *INDENT-OFF* */
 #ifdef __cplusplus
     }
