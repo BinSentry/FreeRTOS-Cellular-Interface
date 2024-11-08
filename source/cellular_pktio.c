@@ -594,7 +594,7 @@ static char * _Cellular_ReadLine( CellularContext_t * pContext,
                                             CELLULAR_COMM_IF_RECV_TIMEOUT_MS, &bytesRead );
         if (receiveError != IOT_COMM_INTERFACE_SUCCESS && receiveError != IOT_COMM_INTERFACE_TIMEOUT)
         {
-            LogDebug( ( "Receive error: %d", receiveError ) );
+            LogDebug( ( "Receive error: %d.", receiveError ) );
         }
 
         if( bytesRead > 0U )
@@ -707,7 +707,7 @@ static CellularPktStatus_t _handleMsgType( CellularContext_t * pContext,
         if( *ppAtResp == NULL )
         {
             *ppAtResp = _Cellular_AtResponseNew();
-            LogDebug( ( "Allocate at response %p", ( void * ) *ppAtResp ) );
+            LogDebug( ( "Allocate at response %p.", ( void * ) *ppAtResp ) );
         }
 
         LogDebug( ( "AT solicited Resp[%s]", pLine ) );
@@ -764,7 +764,7 @@ static CellularPktStatus_t _handleMsgType( CellularContext_t * pContext,
 
         if( pkStatus != CELLULAR_PKT_STATUS_OK )
         {
-            LogError( ( "recvdMsgType is AT_UNDEFINED for Message: %s, cmd %s",
+            LogError( ( "recvdMsgType is AT_UNDEFINED for Message: '%s', cmd '%s'.",
                         pLine,
                         ( pContext->pCurrentCmd != NULL ? pContext->pCurrentCmd : "NULL" ) ) );
 
@@ -872,7 +872,7 @@ static bool _preprocessLine( CellularContext_t * pContext,
 
             if( pktStatus != CELLULAR_PKT_STATUS_OK )
             {
-                LogError( ( "pktDataSendPrefixCB returns error %d", pktStatus ) );
+                LogError( ( "pktDataSendPrefixCB returns error %d.", pktStatus ) );
                 keepProcess = false;
             }
         }
@@ -907,7 +907,7 @@ static bool _preprocessLine( CellularContext_t * pContext,
             }
             else
             {
-                LogError( ( "pktDataPrefixCB returns error %d", pktStatus ) );
+                LogError( ( "pktDataPrefixCB returns error %d.", pktStatus ) );
                 keepProcess = false;
             }
         }
@@ -944,7 +944,7 @@ static bool _handleDataResult( CellularContext_t * pContext,
     else
     {
         *pBytesRead = bytesLeft;
-        LogDebug( ( "_handleData okay, keep processing %u bytes %p", bytesLeft, *ppLine ) );
+        LogDebug( ( "_handleData okay, keep processing %u bytes %p.", bytesLeft, *ppLine ) );
     }
 
     return keepProcess;
@@ -1040,7 +1040,7 @@ static void _handleAllReceived( CellularContext_t * pContext,
             }
             else
             {
-                LogDebug( ( "_handleMsgType failed %d", pktStatus ) );
+                LogDebug( ( "_handleMsgType failed %d.", pktStatus ) );
                 keepProcess = false;
             }
         }
@@ -1222,7 +1222,7 @@ CellularPktStatus_t _Cellular_PktioInit( CellularContext_t * pContext,
 
     if( pktStatus == CELLULAR_PKT_STATUS_OK )
     {
-        LogDebug( ( "Thread create: read_thread status:%d", pktStatus ) );
+        LogDebug( ( "Thread create: read_thread status:%d.", pktStatus ) );
     }
     else
     {
@@ -1304,10 +1304,10 @@ CellularPktStatus_t _Cellular_PktioSendAtCmd( CellularContext_t * pContext,
                                                         ( const uint8_t * ) &pContext->pktioSendBuf, newCmdLen,
                                                         CELLULAR_COMM_IF_SEND_TIMEOUT_MS, &sentLen );
             if (sendError != IOT_COMM_INTERFACE_SUCCESS) {
-                LogError( ( "Send error: %d", sendError ) );
+                LogError( ( "Send error: %d.", sendError ) );
                 pktStatus = CELLULAR_PKT_STATUS_FAILURE;
             } else if (sentLen < newCmdLen) {
-                LogError( ( "Failed to send whole AT command, len: %lu, sentLen: %lu", newCmdLen, sentLen ) );
+                LogError( ( "Failed to send whole AT command, len: %lu, sentLen: %lu.", newCmdLen, sentLen ) );
                 pktStatus = CELLULAR_PKT_STATUS_FAILURE;
             }
         }
@@ -1342,7 +1342,7 @@ uint32_t _Cellular_PktioSendData( CellularContext_t * pContext,
         CellularCommInterfaceError_t sendError = pContext->pCommIntf->send( pContext->hPktioCommIntf, pData,
                                             dataLen, CELLULAR_COMM_IF_SEND_TIMEOUT_MS, &sentLen );
         if (sendError != IOT_COMM_INTERFACE_SUCCESS) {
-            LogDebug( ( "Send error: %d", sendError ) );
+            LogDebug( ( "Send error: %d.", sendError ) );
         }
     }
 
