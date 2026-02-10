@@ -335,6 +335,22 @@ CellularError_t Cellular_CommonATCommandRaw( CellularHandle_t cellularHandle,
                                              void * pData,
                                              uint16_t dataLen )
 {
+    return Cellular_CommonATCommandRawTimeout( cellularHandle, pATCommandPrefix, pATCommandPayload, atCommandType,
+                                               responseReceivedCallback, pData, dataLen,
+                                               CELLULAR_AT_COMMAND_RAW_TIMEOUT_MS );
+}
+
+/*-----------------------------------------------------------*/
+
+CellularError_t Cellular_CommonATCommandRawTimeout( CellularHandle_t cellularHandle,
+                                                    const char * pATCommandPrefix,
+                                                    const char * pATCommandPayload,
+                                                    CellularATCommandType_t atCommandType,
+                                                    CellularATCommandResponseReceivedCallback_t responseReceivedCallback,
+                                                    void * pData,
+                                                    uint16_t dataLen,
+                                                    uint32_t timeoutMS )
+{
     CellularContext_t * pContext = ( CellularContext_t * ) cellularHandle;
     CellularError_t cellularStatus = CELLULAR_SUCCESS;
     CellularPktStatus_t pktStatus = CELLULAR_PKT_STATUS_OK;
@@ -363,7 +379,7 @@ CellularError_t Cellular_CommonATCommandRaw( CellularHandle_t cellularHandle,
 
         pktStatus = _Cellular_TimeoutAtcmdRequestWithCallback( pContext,
                                                                atReqGetResult,
-                                                               CELLULAR_AT_COMMAND_RAW_TIMEOUT_MS );
+                                                               timeoutMS );
         cellularStatus = _Cellular_TranslatePktStatus( pktStatus );
     }
 

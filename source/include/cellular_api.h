@@ -525,6 +525,33 @@ CellularError_t Cellular_ATCommandRaw( CellularHandle_t cellularHandle,
                                        uint16_t dataLen );
 
 /**
+ * @brief Send the raw AT command to the module with specified timeout.
+ *
+ * @param[in] cellularHandle The opaque cellular context pointer created by Cellular_Init.
+ * @param[in] pATCommandPrefix The AT command response prefix. NULL if the response
+ * has no prefix.
+ * @param[in] pATCommandPayload The AT command to send. It should be a NULL terminated
+ * string.
+ * @param[in] atCommandType Type of AT command.
+ * @param[in] responseReceivedCallback Callback to be invoked when a response for the
+ * command is received.
+ * @param[in] pData The pData pointer will be passed in responseReceivedCallback.
+ * @param[in] dataLen The dataLen value will be passed in responseReceivedCallback.
+ * @param[in] timeoutMS The timeout value to wait for the response from cellular modem.
+ *
+ * @return CELLULAR_SUCCESS if the operation is successful, otherwise an error
+ * code indicating the cause of the error.
+ */
+CellularError_t Cellular_ATCommandRawTimeout( CellularHandle_t cellularHandle,
+                                              const char * pATCommandPrefix,
+                                              const char * pATCommandPayload,
+                                              CellularATCommandType_t atCommandType,
+                                              CellularATCommandResponseReceivedCallback_t responseReceivedCallback,
+                                              void * pData,
+                                              uint16_t dataLen,
+                                              uint32_t timeoutMS );
+
+/**
  * @brief Create a socket.
  *
  * @param[in] cellularHandle The opaque cellular context pointer created by Cellular_Init.
