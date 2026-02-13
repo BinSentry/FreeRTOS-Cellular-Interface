@@ -433,16 +433,28 @@ CellularError_t Cellular_RegisterUrcGenericCallback( CellularHandle_t cellularHa
                                                      void * pCallbackContext );
 
 /**
- * @brief Get current PSM settings.
+ * @brief Get current network PSM settings.
  *
  * @param[in] cellularHandle The opaque cellular context pointer created by Cellular_Init.
- * @param[out] pPsmSettings Out parameter to provide the PSM settings.
+ * @param[out] pPsmSettings Out parameter to provide the PSM settings. NOTE: Values are NOT encoded
  *
  * @return CELLULAR_SUCCESS if the operation is successful, otherwise an error
  * code indicating the cause of the error.
  */
 CellularError_t Cellular_GetPsmSettings( CellularHandle_t cellularHandle,
                                          CellularPsmSettings_t * pPsmSettings );
+
+/**
+ * @brief Get current requested PSM settings (network ultimately chooses PSM settings for Active time, etc).
+ *
+ * @param[in] cellularHandle The opaque cellular context pointer created by Cellular_Init.
+ * @param[out] pPsmSettings Out parameter to provide the PSM settings. NOTE: Values are encoded uint8
+ *
+ * @return CELLULAR_SUCCESS if the operation is successful, otherwise an error
+ * code indicating the cause of the error.
+ */
+CellularError_t Cellular_GetRequestedPsmSettings( CellularHandle_t cellularHandle,
+                                                  CellularPsmSettings_t * pPsmSettings );
 
 /**
  * @brief Set PSM settings.
