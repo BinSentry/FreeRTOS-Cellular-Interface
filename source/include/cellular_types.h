@@ -594,6 +594,17 @@ typedef enum CellularPSMEnterMode
 
 /**
  * @ingroup cellular_datatypes_enums
+ * @brief Represents RF functionality modes.
+ */
+typedef enum CellularRfFunctionality
+{
+    CELLULAR_RF_FUNCTIONALITY_OFF,      /**<  RF functionality is off (minimum functionality). */
+    CELLULAR_RF_FUNCTIONALITY_ON,       /**<  RF functionality is on (full functionality - RF and SIM). */
+    CELLULAR_RF_FUNCTIONALITY_SIM_ONLY, /**<  RF functionality is off but SIM interface enabled. */
+} CellularRfFunctionality_t;
+
+/**
+ * @ingroup cellular_datatypes_enums
  * @brief Represents Network Operator mode which places network operator specific requirements defined on top of 3GPP requirements.
  */
 typedef enum CellularNetworkOperatorMode

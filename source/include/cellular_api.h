@@ -127,6 +127,18 @@ CellularError_t Cellular_RfOn( CellularHandle_t cellularHandle );
 CellularError_t Cellular_RfOff( CellularHandle_t cellularHandle );
 
 /**
+ * @brief Get whether RF is on.
+ *
+ * @param[in] cellularHandle The opaque cellular context pointer created by Cellular_Init.
+ * @param[out] pRfFunctionality Out parameter to provide the RF functionality status.
+ *
+ * @return CELLULAR_SUCCESS if the operation is successful, otherwise an error
+ * code indicating the cause of the error.
+ */
+CellularError_t Cellular_GetRfFunctionality( CellularHandle_t cellularHandle,
+                                             CellularRfFunctionality_t * pRfFunctionality );
+
+/**
  * @brief Get SIM card status (activated/Pin set etc.).
  *
  * @param[in] cellularHandle The opaque cellular context pointer created by Cellular_Init.
