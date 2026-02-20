@@ -127,6 +127,16 @@ CellularError_t Cellular_RfOn( CellularHandle_t cellularHandle );
 CellularError_t Cellular_RfOff( CellularHandle_t cellularHandle );
 
 /**
+ * @brief Turn off SIM card and turn off RF i.e. minimum functionality mode.
+ *
+ * @param[in] cellularHandle The opaque cellular context pointer created by Cellular_Init.
+ *
+ * @return CELLULAR_SUCCESS if the operation is successful, otherwise an error
+ * code indicating the cause of the error.
+ */
+CellularError_t Cellular_SimAndRfOff( CellularHandle_t cellularHandle );
+
+/**
  * @brief Get whether RF is on.
  *
  * @param[in] cellularHandle The opaque cellular context pointer created by Cellular_Init.
