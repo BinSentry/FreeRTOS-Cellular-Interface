@@ -232,12 +232,13 @@ static CellularPktStatus_t _parseLacTacInRegStatus( CellularNetworkRegType_t reg
     uint16_t var = 0;
     CellularATError_t atCoreStatus = CELLULAR_AT_SUCCESS;
     CellularPktStatus_t packetStatus = CELLULAR_PKT_STATUS_OK;
+    bool skipParsing = false;
 
     if( ( pToken != NULL ) && ( pToken[0] == '\0' ) )
     {
         if( allowEmpty == true )
         {
-            return packetStatus;
+            skipParsing = true;
         }
         else
         {
@@ -245,39 +246,43 @@ static CellularPktStatus_t _parseLacTacInRegStatus( CellularNetworkRegType_t reg
         }
     }
 
-    atCoreStatus = Cellular_ATStrtoi( pToken, 16, &tempValue );
-
-    if( atCoreStatus == CELLULAR_AT_SUCCESS )
+    if( skipParsing != true )
     {
-        if( ( tempValue >= 0 ) && ( tempValue <= UINT16_MAX ) )
+        atCoreStatus = Cellular_ATStrtoi( pToken, 16, &tempValue );
+
+        if( atCoreStatus == CELLULAR_AT_SUCCESS )
         {
-            var = ( uint16_t ) tempValue;
+            if( ( tempValue >= 0 ) && ( tempValue <= UINT16_MAX ) )
+            {
+                var = ( uint16_t ) tempValue;
+            }
+            else
+            {
+                atCoreStatus = CELLULAR_AT_ERROR;
+            }
         }
-        else
+
+        if( atCoreStatus == CELLULAR_AT_SUCCESS )
         {
-            atCoreStatus = CELLULAR_AT_ERROR;
+            /* Parsing Location area code for CREG or CGREG. */
+            if( ( regType == CELLULAR_REG_TYPE_CREG ) || ( regType == CELLULAR_REG_TYPE_CGREG ) )
+            {
+                pLibAtData->lac = ( uint16_t ) var;
+            }
+            /* Parsing Tracking area code for CEREG. */
+            else if( regType == CELLULAR_REG_TYPE_CEREG )
+            {
+                pLibAtData->tac = ( uint16_t ) var;
+            }
+            else
+            {
+                /* Empty else MISRA 15.7 */
+            }
         }
+
+        packetStatus = _Cellular_TranslateAtCoreStatus( atCoreStatus );
     }
 
-    if( atCoreStatus == CELLULAR_AT_SUCCESS )
-    {
-        /* Parsing Location area code for CREG or CGREG. */
-        if( ( regType == CELLULAR_REG_TYPE_CREG ) || ( regType == CELLULAR_REG_TYPE_CGREG ) )
-        {
-            pLibAtData->lac = ( uint16_t ) var;
-        }
-        /* Parsing Tracking area code for CEREG. */
-        else if( regType == CELLULAR_REG_TYPE_CEREG )
-        {
-            pLibAtData->tac = ( uint16_t ) var;
-        }
-        else
-        {
-            /* Empty else MISRA 15.7 */
-        }
-    }
-
-    packetStatus = _Cellular_TranslateAtCoreStatus( atCoreStatus );
     return packetStatus;
 }
 
@@ -290,12 +295,13 @@ static CellularPktStatus_t _parseCellIdInRegStatus( const char * pToken,
     int32_t tempValue = 0;
     CellularATError_t atCoreStatus = CELLULAR_AT_SUCCESS;
     CellularPktStatus_t packetStatus = CELLULAR_PKT_STATUS_OK;
+    bool skipParsing = false;
 
     if( ( pToken != NULL ) && ( pToken[0] == '\0' ) )
     {
         if( allowEmpty == true )
         {
-            return packetStatus;
+            skipParsing = true;
         }
         else
         {
@@ -303,22 +309,26 @@ static CellularPktStatus_t _parseCellIdInRegStatus( const char * pToken,
         }
     }
 
-    atCoreStatus = Cellular_ATStrtoi( pToken, 16, &tempValue );
-
-    if( atCoreStatus == CELLULAR_AT_SUCCESS )
+    if( skipParsing != true )
     {
-        if( tempValue >= 0 )
+        atCoreStatus = Cellular_ATStrtoi( pToken, 16, &tempValue );
+
+        if( atCoreStatus == CELLULAR_AT_SUCCESS )
         {
-            pLibAtData->cellId = ( uint32_t ) tempValue;
+            if( tempValue >= 0 )
+            {
+                pLibAtData->cellId = ( uint32_t ) tempValue;
+            }
+            else
+            {
+                LogError( ( "Error in processing Cell Id. Token '%s'", pToken ) );
+                atCoreStatus = CELLULAR_AT_ERROR;
+            }
         }
-        else
-        {
-            LogError( ( "Error in processing Cell Id. Token '%s'", pToken ) );
-            atCoreStatus = CELLULAR_AT_ERROR;
-        }
+
+        packetStatus = _Cellular_TranslateAtCoreStatus( atCoreStatus );
     }
 
-    packetStatus = _Cellular_TranslateAtCoreStatus( atCoreStatus );
     return packetStatus;
 }
 
@@ -331,12 +341,13 @@ static CellularPktStatus_t _parseRatInfoInRegStatus( const char * pToken,
     int32_t var = 0;
     CellularATError_t atCoreStatus = CELLULAR_AT_SUCCESS;
     CellularPktStatus_t packetStatus = CELLULAR_PKT_STATUS_OK;
+    bool skipParsing = false;
 
     if( ( pToken != NULL ) && ( pToken[0] == '\0' ) )
     {
         if( allowEmpty == true )
         {
-            return packetStatus;
+            skipParsing = true;
         }
         else
         {
@@ -344,35 +355,39 @@ static CellularPktStatus_t _parseRatInfoInRegStatus( const char * pToken,
         }
     }
 
-    atCoreStatus = Cellular_ATStrtoi( pToken, 10, &var );
-
-    if( atCoreStatus == CELLULAR_AT_SUCCESS )
+    if( skipParsing != true )
     {
-        if( var >= ( int32_t ) CELLULAR_RAT_MAX )
+        atCoreStatus = Cellular_ATStrtoi( pToken, 10, &var );
+
+        if( atCoreStatus == CELLULAR_AT_SUCCESS )
         {
-            atCoreStatus = CELLULAR_AT_ERROR;
-            LogError( ( "Error in processing RAT. Token '%s'", pToken ) );
+            if( var >= ( int32_t ) CELLULAR_RAT_MAX )
+            {
+                atCoreStatus = CELLULAR_AT_ERROR;
+                LogError( ( "Error in processing RAT. Token '%s'", pToken ) );
+            }
+            else if( ( var == ( int32_t ) CELLULAR_RAT_GSM ) || ( var == ( int32_t ) CELLULAR_RAT_EDGE ) ||
+                     ( var == ( int32_t ) CELLULAR_RAT_CATM1 ) || ( var == ( int32_t ) CELLULAR_RAT_NBIOT ) )
+            {
+                /* MISRA Ref 10.5.1 [Essential type casting] */
+                /* More details at: https://github.com/FreeRTOS/FreeRTOS-Cellular-Interface/blob/main/MISRA.md#rule-105 */
+                /* coverity[misra_c_2012_rule_10_5_violation] */
+                pLibAtData->rat = ( CellularRat_t ) var;
+            }
+            else if( var == ( int32_t ) CELLULAR_RAT_LTE )
+            {
+                /* Some cellular module use 7 : CELLULAR_RAT_LTE to indicate CAT-M1. */
+                pLibAtData->rat = ( CellularRat_t ) CELLULAR_RAT_LTE;
+            }
+            else
+            {
+                pLibAtData->rat = CELLULAR_RAT_INVALID;
+            }
         }
-        else if( ( var == ( int32_t ) CELLULAR_RAT_GSM ) || ( var == ( int32_t ) CELLULAR_RAT_EDGE ) ||
-                 ( var == ( int32_t ) CELLULAR_RAT_CATM1 ) || ( var == ( int32_t ) CELLULAR_RAT_NBIOT ) )
-        {
-            /* MISRA Ref 10.5.1 [Essential type casting] */
-            /* More details at: https://github.com/FreeRTOS/FreeRTOS-Cellular-Interface/blob/main/MISRA.md#rule-105 */
-            /* coverity[misra_c_2012_rule_10_5_violation] */
-            pLibAtData->rat = ( CellularRat_t ) var;
-        }
-        else if( var == ( int32_t ) CELLULAR_RAT_LTE )
-        {
-            /* Some cellular module use 7 : CELLULAR_RAT_LTE to indicate CAT-M1. */
-            pLibAtData->rat = ( CellularRat_t ) CELLULAR_RAT_LTE;
-        }
-        else
-        {
-            pLibAtData->rat = CELLULAR_RAT_INVALID;
-        }
+
+        packetStatus = _Cellular_TranslateAtCoreStatus( atCoreStatus );
     }
 
-    packetStatus = _Cellular_TranslateAtCoreStatus( atCoreStatus );
     return packetStatus;
 }
 
@@ -387,12 +402,13 @@ static CellularPktStatus_t _parseRejectTypeInRegStatus( CellularNetworkRegType_t
     uint8_t rejType = 0;
     CellularATError_t atCoreStatus = CELLULAR_AT_SUCCESS;
     CellularPktStatus_t packetStatus = CELLULAR_PKT_STATUS_OK;
+    bool skipParsing = false;
 
     if( ( pToken != NULL ) && ( pToken[0] == '\0' ) )
     {
         if( allowEmpty == true )
         {
-            return packetStatus;
+            skipParsing = true;
         }
         else
         {
@@ -400,44 +416,48 @@ static CellularPktStatus_t _parseRejectTypeInRegStatus( CellularNetworkRegType_t
         }
     }
 
-    atCoreStatus = Cellular_ATStrtoi( pToken, 10, &tempValue );
-
-    if( atCoreStatus == CELLULAR_AT_SUCCESS )
+    if( skipParsing != true )
     {
-        if( ( tempValue >= 0 ) && ( tempValue <= ( int32_t ) UINT8_MAX ) )
-        {
-            rejType = ( uint8_t ) tempValue;
-        }
-        else
-        {
-            atCoreStatus = CELLULAR_AT_ERROR;
-        }
-    }
+        atCoreStatus = Cellular_ATStrtoi( pToken, 10, &tempValue );
 
-    if( atCoreStatus == CELLULAR_AT_SUCCESS )
-    {
-        if( regType == CELLULAR_REG_TYPE_CREG )
+        if( atCoreStatus == CELLULAR_AT_SUCCESS )
         {
-            /* Reject Type is only stored if the registration status is denied. */
-            if( pLibAtData->csRegStatus == REGISTRATION_STATUS_REGISTRATION_DENIED )
+            if( ( tempValue >= 0 ) && ( tempValue <= ( int32_t ) UINT8_MAX ) )
             {
-                pLibAtData->csRejectType = rejType;
+                rejType = ( uint8_t ) tempValue;
+            }
+            else
+            {
+                atCoreStatus = CELLULAR_AT_ERROR;
             }
         }
-        else if( ( regType == CELLULAR_REG_TYPE_CGREG ) || ( regType == CELLULAR_REG_TYPE_CEREG ) )
+
+        if( atCoreStatus == CELLULAR_AT_SUCCESS )
         {
-            if( pLibAtData->psRegStatus == REGISTRATION_STATUS_REGISTRATION_DENIED )
+            if( regType == CELLULAR_REG_TYPE_CREG )
             {
-                pLibAtData->psRejectType = rejType;
+                /* Reject Type is only stored if the registration status is denied. */
+                if( pLibAtData->csRegStatus == REGISTRATION_STATUS_REGISTRATION_DENIED )
+                {
+                    pLibAtData->csRejectType = rejType;
+                }
+            }
+            else if( ( regType == CELLULAR_REG_TYPE_CGREG ) || ( regType == CELLULAR_REG_TYPE_CEREG ) )
+            {
+                if( pLibAtData->psRegStatus == REGISTRATION_STATUS_REGISTRATION_DENIED )
+                {
+                    pLibAtData->psRejectType = rejType;
+                }
+            }
+            else
+            {
+                /* Empty else MISRA 15.7 */
             }
         }
-        else
-        {
-            /* Empty else MISRA 15.7 */
-        }
+
+        packetStatus = _Cellular_TranslateAtCoreStatus( atCoreStatus );
     }
 
-    packetStatus = _Cellular_TranslateAtCoreStatus( atCoreStatus );
     return packetStatus;
 }
 
@@ -452,12 +472,13 @@ static CellularPktStatus_t _parseRejectCauseInRegStatus( CellularNetworkRegType_
     uint8_t rejCause = 0;
     CellularATError_t atCoreStatus = CELLULAR_AT_SUCCESS;
     CellularPktStatus_t packetStatus = CELLULAR_PKT_STATUS_OK;
+    bool skipParsing = false;
 
     if( ( pToken != NULL ) && ( pToken[0] == '\0' ) )
     {
         if( allowEmpty == true )
         {
-            return packetStatus;
+            skipParsing = true;
         }
         else
         {
@@ -465,43 +486,46 @@ static CellularPktStatus_t _parseRejectCauseInRegStatus( CellularNetworkRegType_
         }
     }
 
-    atCoreStatus = Cellular_ATStrtoi( pToken, 10, &tempValue );
-
-    if( atCoreStatus == CELLULAR_AT_SUCCESS )
+    if( skipParsing != true )
     {
-        if( ( tempValue >= 0 ) && ( tempValue <= ( int32_t ) UINT8_MAX ) )
-        {
-            rejCause = ( uint8_t ) tempValue;
-        }
-        else
-        {
-            atCoreStatus = CELLULAR_AT_ERROR;
-        }
-    }
+        atCoreStatus = Cellular_ATStrtoi( pToken, 10, &tempValue );
 
-    if( atCoreStatus == CELLULAR_AT_SUCCESS )
-    {
-        if( regType == CELLULAR_REG_TYPE_CREG )
+        if( atCoreStatus == CELLULAR_AT_SUCCESS )
         {
-            if( pLibAtData->csRegStatus == REGISTRATION_STATUS_REGISTRATION_DENIED )
+            if( ( tempValue >= 0 ) && ( tempValue <= ( int32_t ) UINT8_MAX ) )
             {
-                pLibAtData->csRejCause = rejCause;
+                rejCause = ( uint8_t ) tempValue;
+            }
+            else
+            {
+                atCoreStatus = CELLULAR_AT_ERROR;
             }
         }
-        else if( ( regType == CELLULAR_REG_TYPE_CGREG ) || ( regType == CELLULAR_REG_TYPE_CEREG ) )
+
+        if( atCoreStatus == CELLULAR_AT_SUCCESS )
         {
-            if( pLibAtData->psRegStatus == REGISTRATION_STATUS_REGISTRATION_DENIED )
+            if( regType == CELLULAR_REG_TYPE_CREG )
             {
-                pLibAtData->psRejCause = rejCause;
+                if( pLibAtData->csRegStatus == REGISTRATION_STATUS_REGISTRATION_DENIED )
+                {
+                    pLibAtData->csRejCause = rejCause;
+                }
+            }
+            else if( ( regType == CELLULAR_REG_TYPE_CGREG ) || ( regType == CELLULAR_REG_TYPE_CEREG ) )
+            {
+                if( pLibAtData->psRegStatus == REGISTRATION_STATUS_REGISTRATION_DENIED )
+                {
+                    pLibAtData->psRejCause = rejCause;
+                }
+            }
+            else
+            {
+                /* Empty else MISRA 15.7 */
             }
         }
-        else
-        {
-            /* Empty else MISRA 15.7 */
-        }
-    }
 
-    packetStatus = _Cellular_TranslateAtCoreStatus( atCoreStatus );
+        packetStatus = _Cellular_TranslateAtCoreStatus( atCoreStatus );
+    }
 
     return packetStatus;
 }
@@ -515,13 +539,14 @@ static CellularPktStatus_t _parseActiveTimeInRegStatus( const char * pToken,
     int32_t tempValue = 0;
     CellularATError_t atCoreStatus = CELLULAR_AT_SUCCESS;
     CellularPktStatus_t packetStatus = CELLULAR_PKT_STATUS_OK;
+    bool skipParsing = false;
 
     if( ( pToken != NULL ) && ( pToken[0] == '\0' ) )
     {
         if( allowEmpty == true )
         {
             pLibAtData->activeTimeValue = 0xFFFFFFFF;
-            return packetStatus;
+            skipParsing = true;
         }
         else
         {
@@ -529,22 +554,26 @@ static CellularPktStatus_t _parseActiveTimeInRegStatus( const char * pToken,
         }
     }
 
-    atCoreStatus = Cellular_ATStrtoi( pToken, 2, &tempValue );
-
-    if( atCoreStatus == CELLULAR_AT_SUCCESS )
+    if( skipParsing != true )
     {
-        if( ( tempValue >= 0 ) && ( tempValue <= UINT8_MAX ) )
+        atCoreStatus = Cellular_ATStrtoi( pToken, 2, &tempValue );
+
+        if( atCoreStatus == CELLULAR_AT_SUCCESS )
         {
-            pLibAtData->activeTimeValue = ( uint32_t ) tempValue;
+            if( ( tempValue >= 0 ) && ( tempValue <= UINT8_MAX ) )
+            {
+                pLibAtData->activeTimeValue = ( uint32_t ) tempValue;
+            }
+            else
+            {
+                LogError( ( "Error in processing Active Time value. Token '%s'", pToken ) );
+                atCoreStatus = CELLULAR_AT_ERROR;
+            }
         }
-        else
-        {
-            LogError( ( "Error in processing Active Time value. Token '%s'", pToken ) );
-            atCoreStatus = CELLULAR_AT_ERROR;
-        }
+
+        packetStatus = _Cellular_TranslateAtCoreStatus( atCoreStatus );
     }
 
-    packetStatus = _Cellular_TranslateAtCoreStatus( atCoreStatus );
     return packetStatus;
 }
 
@@ -557,13 +586,14 @@ static CellularPktStatus_t _parsePeriodicTauInRegStatus( const char * pToken,
     int32_t tempValue = 0;
     CellularATError_t atCoreStatus = CELLULAR_AT_SUCCESS;
     CellularPktStatus_t packetStatus = CELLULAR_PKT_STATUS_OK;
+    bool skipParsing = false;
 
     if( ( pToken != NULL ) && ( pToken[0] == '\0' ) )
     {
         if( allowEmpty == true )
         {
             pLibAtData->periodicTauValue = 0xFFFFFFFF;
-            return packetStatus;
+            skipParsing = true;
         }
         else
         {
@@ -571,22 +601,26 @@ static CellularPktStatus_t _parsePeriodicTauInRegStatus( const char * pToken,
         }
     }
 
-    atCoreStatus = Cellular_ATStrtoi( pToken, 2, &tempValue );
-
-    if( atCoreStatus == CELLULAR_AT_SUCCESS )
+    if( skipParsing != true )
     {
-        if( ( tempValue >= 0 ) && ( tempValue <= UINT8_MAX ) )
+        atCoreStatus = Cellular_ATStrtoi( pToken, 2, &tempValue );
+
+        if( atCoreStatus == CELLULAR_AT_SUCCESS )
         {
-            pLibAtData->periodicTauValue = ( uint32_t ) tempValue;
+            if( ( tempValue >= 0 ) && ( tempValue <= UINT8_MAX ) )
+            {
+                pLibAtData->periodicTauValue = ( uint32_t ) tempValue;
+            }
+            else
+            {
+                LogError( ( "Error in processing Periodic TAU value. Token '%s'", pToken ) );
+                atCoreStatus = CELLULAR_AT_ERROR;
+            }
         }
-        else
-        {
-            LogError( ( "Error in processing Periodic TAU value. Token '%s'", pToken ) );
-            atCoreStatus = CELLULAR_AT_ERROR;
-        }
+
+        packetStatus = _Cellular_TranslateAtCoreStatus( atCoreStatus );
     }
 
-    packetStatus = _Cellular_TranslateAtCoreStatus( atCoreStatus );
     return packetStatus;
 }
 
