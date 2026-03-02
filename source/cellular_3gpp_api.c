@@ -823,20 +823,15 @@ static CellularPktStatus_t _Cellular_RecvFuncGetNetworkReg( CellularContext_t * 
             /* Assumption is that the data is null terminated so we don't need the dataLen. */
             _Cellular_LockAtDataMutex( pContext );
 
-            if( regResponseIsUrc( pPregLine ) == true )
-            {
-                /* Remove the prefix for URC handler. */
-                atCoreStatus = Cellular_ATRemovePrefix( &pPregLine );
-                pktStatus = _Cellular_TranslateAtCoreStatus( atCoreStatus );
+            bool isUrc = regResponseIsUrc( pPregLine );
 
-                if( pktStatus == CELLULAR_PKT_STATUS_OK )
-                {
-                    pktStatus = _Cellular_ParseRegStatus( pContext, pPregLine, true, regType );
-                }
-            }
-            else
+            /* Remove the prefix for URC handler. */
+            atCoreStatus = Cellular_ATRemovePrefix( &pPregLine );
+            pktStatus = _Cellular_TranslateAtCoreStatus( atCoreStatus );
+
+            if( pktStatus == CELLULAR_PKT_STATUS_OK )
             {
-                pktStatus = _Cellular_ParseRegStatus( pContext, pPregLine, false, regType );
+                pktStatus = _Cellular_ParseRegStatus( pContext, pPregLine, isUrc, regType );
             }
 
             _Cellular_UnlockAtDataMutex( pContext );
@@ -2132,6 +2127,8 @@ void _Cellular_InitAtData( CellularContext_t * pContext,
     pLibAtData->cellId = 0xFFFFFFFFU;
     pLibAtData->rat = CELLULAR_RAT_INVALID;
     pLibAtData->rac = 0xFF;
+    pLibAtData->periodicTauValue = 0xFFFFFFFFU;
+    pLibAtData->activeTimeValue = 0xFFFFFFFFU;
 }
 
 /*-----------------------------------------------------------*/
