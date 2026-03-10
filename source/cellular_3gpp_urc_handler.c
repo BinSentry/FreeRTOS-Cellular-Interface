@@ -131,14 +131,14 @@ static CellularATError_t _parseUrcModeInRegStatus( const char * pToken,
 
         if( atCoreStatus == CELLULAR_AT_SUCCESS )
         {
-            if( ( var < 0 ) || ( var > 4 ) )
+            if( ( var >= 0 ) && ( var <= UINT8_MAX ) )
             {
-                atCoreStatus = CELLULAR_AT_ERROR;
-                LogError( ( "Error in processing URC mode in reg status. Token '%s'", pToken ) );
+                *urcMode = ( uint8_t ) var;
             }
             else
             {
-                *urcMode = ( uint8_t ) var;
+                atCoreStatus = CELLULAR_AT_ERROR;
+                LogError( ( "Error in processing URC mode in reg status. Token '%s'", pToken ) );
             }
         }
     }
@@ -292,7 +292,7 @@ static CellularPktStatus_t _parseCellIdInRegStatus( const char * pToken,
                                                     cellularAtData_t * pLibAtData,
                                                     bool allowEmpty )
 {
-    int32_t tempValue = 0;
+    uint32_t tempValue = 0;
     CellularATError_t atCoreStatus = CELLULAR_AT_SUCCESS;
     CellularPktStatus_t packetStatus = CELLULAR_PKT_STATUS_OK;
     bool skipParsing = false;
@@ -311,19 +311,15 @@ static CellularPktStatus_t _parseCellIdInRegStatus( const char * pToken,
 
     if( skipParsing != true )
     {
-        atCoreStatus = Cellular_ATStrtoi( pToken, 16, &tempValue );
+        atCoreStatus = Cellular_ATStrtoui( pToken, 16, &tempValue );
 
         if( atCoreStatus == CELLULAR_AT_SUCCESS )
         {
-            if( tempValue >= 0 )
-            {
-                pLibAtData->cellId = ( uint32_t ) tempValue;
-            }
-            else
-            {
-                LogError( ( "Error in processing Cell Id. Token '%s'", pToken ) );
-                atCoreStatus = CELLULAR_AT_ERROR;
-            }
+            pLibAtData->cellId = tempValue;
+        }
+        else
+        {
+            LogError( ( "Error in processing Cell Id. Token '%s'", pToken ) );
         }
 
         packetStatus = _Cellular_TranslateAtCoreStatus( atCoreStatus );
@@ -666,12 +662,12 @@ static CellularPktStatus_t _regStatusSwitchParsingFunc( CellularContext_t * pCon
 
         /* Parsing Cell ID. */
         case CELLULAR_REG_POS_CELL_ID:
-        packetStatus = _parseCellIdInRegStatus( pToken, pLibAtData, isUrcOrUrcModePSM /* allowEmpty= */ );
+            packetStatus = _parseCellIdInRegStatus( pToken, pLibAtData, isUrcOrUrcModePSM /* allowEmpty= */ );
             break;
 
         /* Parsing RAT Information. */
         case CELLULAR_REG_POS_RAT:
-        packetStatus = _parseRatInfoInRegStatus( pToken, pLibAtData, isUrcOrUrcModePSM /* allowEmpty= */ );
+            packetStatus = _parseRatInfoInRegStatus( pToken, pLibAtData, isUrcOrUrcModePSM /* allowEmpty= */ );
             break;
 
         /* Parsing Reject Type. */
@@ -719,8 +715,7 @@ static CellularPktStatus_t _regStatusSwitchParsingFunc( CellularContext_t * pCon
             break;
 
         default:
-            // TODO (MV): Return to debug
-            LogError( ( "Unknown Parameter Position in Registration URC: %hhu", i ) );
+            LogDebug( ( "Unknown Parameter Position in Registration URC: %hhu", i ) );
             break;
     }
 
@@ -744,8 +739,7 @@ static void _regStatusGenerateLog( char * pRegPayload,
     }
     else if( regType == CELLULAR_REG_TYPE_CEREG )
     {
-        // TODO (MV): Return this to debug
-        LogInfo( ( "URC: CEREG: %s", pRegPayload ) );
+        LogDebug( ( "URC: CEREG: %s", pRegPayload ) );
     }
     else
     {
@@ -858,8 +852,8 @@ CellularPktStatus_t _Cellular_ParseRegStatus( CellularContext_t * pContext,
 
         pRegStr = pRegPayload;
 
-        // TODO (MV): Remove
-        LogError( ( "%s '%s'",
+        // FUTURE: Remove once satisfied with Registration Status parsing, currently at error level to guarantee logging
+        LogError( ( "%s: '%s'",
                     ( ( regType == CELLULAR_REG_TYPE_CREG ) ? "CREG" :
                         ( ( regType == CELLULAR_REG_TYPE_CEREG ) ? "CEREG" :
                             ( ( regType == CELLULAR_REG_TYPE_CGREG ) ? "CGREG" :

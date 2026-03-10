@@ -796,6 +796,7 @@ static CellularPktStatus_t _Cellular_RecvFuncGetNetworkReg( CellularContext_t * 
     CellularATError_t atCoreStatus = CELLULAR_AT_SUCCESS;
     CellularNetworkRegType_t regType = CELLULAR_REG_TYPE_UNKNOWN;
     CellularATCommandLine_t * pCommandLine = NULL;
+    bool isUrc = false;
 
     if( pContext == NULL )
     {
@@ -823,7 +824,7 @@ static CellularPktStatus_t _Cellular_RecvFuncGetNetworkReg( CellularContext_t * 
             /* Assumption is that the data is null terminated so we don't need the dataLen. */
             _Cellular_LockAtDataMutex( pContext );
 
-            bool isUrc = regResponseIsUrc( pPregLine );
+            isUrc = regResponseIsUrc( pPregLine );
 
             /* Remove the prefix for URC handler. */
             atCoreStatus = Cellular_ATRemovePrefix( &pPregLine );
