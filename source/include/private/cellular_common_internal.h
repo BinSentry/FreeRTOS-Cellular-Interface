@@ -95,6 +95,38 @@ typedef struct cellularAtData
     uint16_t lac;                                    /**<  Registered network operator Location Area Code. */
     uint16_t rac;                                    /**<  Registered network operator Routing Area Code. */
     uint16_t tac;                                    /**<  Registered network operator Tracking Area Code. */
+
+    /*
+     * Bits 5 to 1 represent the binary coded timer value
+     * Bits 6 to 8 define the timer value unit as follows:
+     * Bits
+     * 8 7 6
+     * 0 0 0 value is incremented in multiples of 10 minutes
+     * 0 0 1 value is incremented in multiples of 1 hour
+     * 0 1 0 value is incremented in multiples of 10 hours
+     * 0 1 1 value is incremented in multiples of 2 seconds
+     * 1 0 0 value is incremented in multiples of 30 seconds
+     * 1 0 1 value is incremented in multiples of 1 minute
+     *
+     * e.g. "00001010" equals to 100 minutes.
+     * first uint8_t is used for PSM set, whole uint32_t is used for PSM get.
+     */
+    uint32_t periodicTauValue; /**< TAU (T3412) value encoded as per spec (as shown above). 0xFFFFFFFF if unknown. */
+
+    /*
+     * Bits 5 to 1 represent the binary coded timer value.
+     * Bits 6 to 8 define the timer value unit as follows:
+     * Bits
+     * 8 7 6
+     * 0 0 0 value is incremented in multiples of 2 seconds
+     * 0 0 1 value is incremented in multiples of 1 minute
+     * 0 1 0 value is incremented in multiples of decihours
+     * 1 1 1 value indicates that the timer is deactivated.
+     *
+     * "00001111" equals to 30 seconds.
+     * first uint8_t is used for PSM set, whole uint32_t is used for PSM get.
+     */
+    uint32_t activeTimeValue; /**< Active Time (T3324) value encoded as per spec (as shown above). 0xFFFFFFFF if unknown. */
 } cellularAtData_t;
 
 /**

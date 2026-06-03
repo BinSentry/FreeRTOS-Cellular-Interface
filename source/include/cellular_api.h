@@ -127,6 +127,28 @@ CellularError_t Cellular_RfOn( CellularHandle_t cellularHandle );
 CellularError_t Cellular_RfOff( CellularHandle_t cellularHandle );
 
 /**
+ * @brief Turn off SIM card and turn off RF i.e. minimum functionality mode.
+ *
+ * @param[in] cellularHandle The opaque cellular context pointer created by Cellular_Init.
+ *
+ * @return CELLULAR_SUCCESS if the operation is successful, otherwise an error
+ * code indicating the cause of the error.
+ */
+CellularError_t Cellular_SimAndRfOff( CellularHandle_t cellularHandle );
+
+/**
+ * @brief Get whether RF is on.
+ *
+ * @param[in] cellularHandle The opaque cellular context pointer created by Cellular_Init.
+ * @param[out] pRfFunctionality Out parameter to provide the RF functionality status.
+ *
+ * @return CELLULAR_SUCCESS if the operation is successful, otherwise an error
+ * code indicating the cause of the error.
+ */
+CellularError_t Cellular_GetRfFunctionality( CellularHandle_t cellularHandle,
+                                             CellularRfFunctionality_t * pRfFunctionality );
+
+/**
  * @brief Get SIM card status (activated/Pin set etc.).
  *
  * @param[in] cellularHandle The opaque cellular context pointer created by Cellular_Init.
@@ -421,16 +443,28 @@ CellularError_t Cellular_RegisterUrcGenericCallback( CellularHandle_t cellularHa
                                                      void * pCallbackContext );
 
 /**
- * @brief Get current PSM settings.
+ * @brief Get current network PSM settings.
  *
  * @param[in] cellularHandle The opaque cellular context pointer created by Cellular_Init.
- * @param[out] pPsmSettings Out parameter to provide the PSM settings.
+ * @param[out] pPsmSettings Out parameter to provide the PSM settings. NOTE: Values are NOT encoded
  *
  * @return CELLULAR_SUCCESS if the operation is successful, otherwise an error
  * code indicating the cause of the error.
  */
 CellularError_t Cellular_GetPsmSettings( CellularHandle_t cellularHandle,
                                          CellularPsmSettings_t * pPsmSettings );
+
+/**
+ * @brief Get current requested PSM settings (network ultimately chooses PSM settings for Active time, etc).
+ *
+ * @param[in] cellularHandle The opaque cellular context pointer created by Cellular_Init.
+ * @param[out] pPsmSettings Out parameter to provide the PSM settings. NOTE: Values are encoded uint8
+ *
+ * @return CELLULAR_SUCCESS if the operation is successful, otherwise an error
+ * code indicating the cause of the error.
+ */
+CellularError_t Cellular_GetRequestedPsmSettings( CellularHandle_t cellularHandle,
+                                                  CellularPsmSettings_t * pPsmSettings );
 
 /**
  * @brief Set PSM settings.
@@ -523,6 +557,33 @@ CellularError_t Cellular_ATCommandRaw( CellularHandle_t cellularHandle,
                                        CellularATCommandResponseReceivedCallback_t responseReceivedCallback,
                                        void * pData,
                                        uint16_t dataLen );
+
+/**
+ * @brief Send the raw AT command to the module with specified timeout.
+ *
+ * @param[in] cellularHandle The opaque cellular context pointer created by Cellular_Init.
+ * @param[in] pATCommandPrefix The AT command response prefix. NULL if the response
+ * has no prefix.
+ * @param[in] pATCommandPayload The AT command to send. It should be a NULL terminated
+ * string.
+ * @param[in] atCommandType Type of AT command.
+ * @param[in] responseReceivedCallback Callback to be invoked when a response for the
+ * command is received.
+ * @param[in] pData The pData pointer will be passed in responseReceivedCallback.
+ * @param[in] dataLen The dataLen value will be passed in responseReceivedCallback.
+ * @param[in] timeoutMS The timeout value to wait for the response from cellular modem.
+ *
+ * @return CELLULAR_SUCCESS if the operation is successful, otherwise an error
+ * code indicating the cause of the error.
+ */
+CellularError_t Cellular_ATCommandRawTimeout( CellularHandle_t cellularHandle,
+                                              const char * pATCommandPrefix,
+                                              const char * pATCommandPayload,
+                                              CellularATCommandType_t atCommandType,
+                                              CellularATCommandResponseReceivedCallback_t responseReceivedCallback,
+                                              void * pData,
+                                              uint16_t dataLen,
+                                              uint32_t timeoutMS );
 
 /**
  * @brief Create a socket.

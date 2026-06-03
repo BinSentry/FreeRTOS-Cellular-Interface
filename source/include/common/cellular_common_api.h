@@ -112,6 +112,19 @@ CellularError_t Cellular_CommonATCommandRaw( CellularHandle_t cellularHandle,
 
 /**
  * @brief This function is the common implementation of FreeRTOS Cellular Library API.
+ * Reference Cellular_ATCommandRawTimeout in cellular_api.h for definition.
+ */
+CellularError_t Cellular_CommonATCommandRawTimeout( CellularHandle_t cellularHandle,
+                                                    const char * pATCommandPrefix,
+                                                    const char * pATCommandPayload,
+                                                    CellularATCommandType_t atCommandType,
+                                                    CellularATCommandResponseReceivedCallback_t responseReceivedCallback,
+                                                    void * pData,
+                                                    uint16_t dataLen,
+                                                    uint32_t timeoutMS );
+
+/**
+ * @brief This function is the common implementation of FreeRTOS Cellular Library API.
  * Reference Cellular_CreateSocket in cellular_api.h for definition.
  */
 CellularError_t Cellular_CommonCreateSocket( CellularHandle_t cellularHandle,
