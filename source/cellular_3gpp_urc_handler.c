@@ -852,8 +852,8 @@ CellularPktStatus_t _Cellular_ParseRegStatus( CellularContext_t * pContext,
 
         pRegStr = pRegPayload;
 
-        // FUTURE: Remove once satisfied with Registration Status parsing, currently at error level to guarantee logging
-        LogError( ( "%s: '%s'",
+        // FUTURE: Remove once satisfied with Registration Status parsing during PSM
+        LogDebug( ( "%s: '%s'",
                     ( ( regType == CELLULAR_REG_TYPE_CREG ) ? "CREG" :
                         ( ( regType == CELLULAR_REG_TYPE_CEREG ) ? "CEREG" :
                             ( ( regType == CELLULAR_REG_TYPE_CGREG ) ? "CGREG" :
