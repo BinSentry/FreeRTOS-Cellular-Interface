@@ -56,6 +56,21 @@
 
 /**
  * @ingroup cellular_common_datatypes_paramstructs
+ * @brief The AT command error response structure.
+ *
+ * Captures the modem error final result line (e.g. "+CME ERROR: 405") for a
+ * request without interpreting it, interpretation of the line is left to the
+ * module port.
+ */
+typedef struct CellularAtErrorResponse
+{
+    bool received;                                     /**< true if the modem returned an error final result for the request. */
+    bool truncated;                                    /**< true if the error final result line didn't fit in line and was truncated. */
+    char line[ CELLULAR_AT_ERROR_RESPONSE_MAX_LENGTH ]; /**< The error final result line, null terminated (truncated if longer). */
+} CellularAtErrorResponse_t;
+
+/**
+ * @ingroup cellular_common_datatypes_paramstructs
  * @brief The AT command request structure.
  */
 typedef struct CellularAtReq
@@ -66,6 +81,7 @@ typedef struct CellularAtReq
     CellularATCommandResponseReceivedCallback_t respCallback; /**< The callback function #CellularATCommandResponseReceivedCallback_t. */
     void * pData;                                             /**< The data pointer to the data. */
     uint16_t dataLen;                                         /**< The length of the data pointer . */
+    CellularAtErrorResponse_t * pErrorResponse;               /**< Optional, set to capture the modem error final result line, NULL if not required. */
 } CellularAtReq_t;
 
 /**

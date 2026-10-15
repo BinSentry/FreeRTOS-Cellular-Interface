@@ -365,6 +365,16 @@ static CellularPktStatus_t _Cellular_ProcessLine( CellularContext_t * pContext,
             {
                 pResp->status = false;
                 pkStatus = CELLULAR_PKT_STATUS_OK;
+
+                /* Capture the error line for the requester, PktRespMutex is held. */
+                if( pContext->pPktErrorResponse != NULL )
+                {
+                    const size_t lineLength = strnlen( pLine, sizeof( pContext->pPktErrorResponse->line ) - 1U );
+                    ( void ) memcpy( pContext->pPktErrorResponse->line, pLine, lineLength );
+                    pContext->pPktErrorResponse->line[ lineLength ] = '\0';
+                    pContext->pPktErrorResponse->truncated = ( pLine[ lineLength ] != '\0' );
+                    pContext->pPktErrorResponse->received = true;
+                }
             }
             else
             {
