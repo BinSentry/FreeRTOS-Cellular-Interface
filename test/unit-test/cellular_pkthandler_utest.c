@@ -1140,6 +1140,38 @@ void test__Cellular_PktHandler_AtcmdRequestWithCallback_Error_Response_Send_Fail
 }
 
 /**
+ * @brief Test that _Cellular_PktHandler_AtcmdRequestWithCallback resets the error response when the request is
+ * rejected before anything is sent, so a reused error response never reports a previous request's error.
+ */
+void test__Cellular_PktHandler_AtcmdRequestWithCallback_Error_Response_Reset_On_Bad_Request( void )
+{
+    CellularPktStatus_t pktStatus = CELLULAR_PKT_STATUS_OK;
+    CellularAtErrorResponse_t errorResponse;
+    CellularAtReq_t atReqNoCommand =
+    {
+        NULL,
+        CELLULAR_AT_WITH_PREFIX,
+        "+QFCRC",
+        NULL,
+        NULL,
+        0,
+        &errorResponse,
+    };
+    CellularContext_t context;
+
+    memset( &context, 0, sizeof( CellularContext_t ) );
+    _setStaleErrorResponse( &errorResponse );
+
+    pktStatus = _Cellular_PktHandler_AtcmdRequestWithCallback( &context, atReqNoCommand, PACKET_REQ_TIMEOUT_MS );
+
+    TEST_ASSERT_EQUAL( CELLULAR_PKT_STATUS_BAD_REQUEST, pktStatus );
+    TEST_ASSERT_FALSE( errorResponse.received );
+    TEST_ASSERT_FALSE( errorResponse.truncated );
+    TEST_ASSERT_EQUAL_STRING( "", errorResponse.line );
+    TEST_ASSERT_NULL( context.pPktErrorResponse );
+}
+
+/**
  * @brief Test that a request without an error response replaces an error response left attached to the context.
  */
 void test__Cellular_PktHandler_AtcmdRequestWithCallback_No_Error_Response( void )

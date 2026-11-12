@@ -81,7 +81,7 @@ typedef struct CellularAtReq
     CellularATCommandResponseReceivedCallback_t respCallback; /**< The callback function #CellularATCommandResponseReceivedCallback_t. */
     void * pData;                                             /**< The data pointer to the data. */
     uint16_t dataLen;                                         /**< The length of the data pointer . */
-    CellularAtErrorResponse_t * pErrorResponse;               /**< Optional, set to capture the modem error final result line, NULL if not required. */
+    CellularAtErrorResponse_t * pErrorResponse;               /**< Optional, set to capture the modem error final result line, NULL if not required. Reset on every request, including rejected ones. */
 } CellularAtReq_t;
 
 /**
