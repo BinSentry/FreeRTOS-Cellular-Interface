@@ -1819,6 +1819,167 @@ void test__Cellular_PktioInit_Thread_Rx_Data_Event_TOKEN_TABLE_ERROR_TOKEN( void
     TEST_ASSERT_EQUAL( CELLULAR_PKT_STATUS_OK, pktStatus );
 }
 
+/* Receives pResponseLines in the pktio thread for a CELLULAR_AT_NO_RESULT command with pErrorResponse attached,
+ * and checks the command status reported to the packet handler. */
+static void _receiveResponseWithErrorResponse( const char * pResponseLines,
+                                               CellularAtErrorResponse_t * pErrorResponse,
+                                               bool expectedCommandStatus )
+{
+    CellularPktStatus_t pktStatus = CELLULAR_PKT_STATUS_OK;
+    CellularContext_t context;
+    CellularCommInterface_t * pCommIntf = &CellularCommInterface;
+    static char responseLines[ PKTIO_READ_BUFFER_SIZE ];
+
+    memset( &context, 0, sizeof( CellularContext_t ) );
+
+    /* Assign the comm interface to pContext. */
+    context.pCommIntf = pCommIntf;
+    context.pPktioShutdownCB = _shutdownCallback;
+    context.pPktErrorResponse = pErrorResponse;
+
+    /* Test the rx_data event with CELLULAR_AT_NO_RESULT type AT command. */
+    atCmdStatusUndefindTest = !expectedCommandStatus;
+    pktioEvtMask = PKTIO_EVT_MASK_RX_DATA;
+    recvCount = 1;
+    atCmdType = CELLULAR_AT_NO_RESULT;
+    testCommIfRecvType = COMM_IF_RECV_CUSTOM_STRING;
+    ( void ) strncpy( responseLines, pResponseLines, sizeof( responseLines ) - 1U );
+    pCommIntfRecvCustomString = responseLines;
+
+    /* Copy the token table. */
+    ( void ) memcpy( &context.tokenTable, &tokenTable, sizeof( CellularTokenTable_t ) );
+
+    /* Check that CELLULAR_PKT_STATUS_OK is returned. */
+    threadReturn = true; /* Set pktio thread return flag. */
+    pktStatus = _Cellular_PktioInit( &context, prvUndefinedHandlePacket );
+    TEST_ASSERT_EQUAL( CELLULAR_PKT_STATUS_OK, pktStatus );
+
+    /* Verify the command status, false if the modem returned an error final result. */
+    TEST_ASSERT_EQUAL( expectedCommandStatus, atCmdStatusUndefindTest );
+}
+
+/* Fills an error response with values that show whether it was written. */
+static void _setUnwrittenErrorResponse( CellularAtErrorResponse_t * pErrorResponse )
+{
+    memset( pErrorResponse, 0, sizeof( CellularAtErrorResponse_t ) );
+    ( void ) strncpy( pErrorResponse->line, "unwritten", sizeof( pErrorResponse->line ) - 1U );
+}
+
+/* Builds the response "+CME ERROR: 000...0405\r\n" with an error line of lineLength characters, leading zeros pad
+ * the code to the length. pErrorLine receives the error line without the line ending. */
+static void _buildCmeErrorResponse( char * pErrorLine,
+                                    char * pResponseLines,
+                                    size_t lineLength )
+{
+    const char prefix[] = "+CME ERROR: ";
+    const char code[] = "405";
+
+    TEST_ASSERT_TRUE( lineLength >= ( ( sizeof( prefix ) - 1U ) + ( sizeof( code ) - 1U ) ) );
+
+    memset( pErrorLine, '0', lineLength );
+    memcpy( pErrorLine, prefix, sizeof( prefix ) - 1U );
+    memcpy( &pErrorLine[ lineLength - ( sizeof( code ) - 1U ) ], code, sizeof( code ) - 1U );
+    pErrorLine[ lineLength ] = '\0';
+
+    memcpy( pResponseLines, pErrorLine, lineLength );
+    memcpy( &pResponseLines[ lineLength ], "\r\n", sizeof( "\r\n" ) );
+}
+
+/**
+ * @brief Test that a CME error final result is captured in the attached error response.
+ */
+void test__Cellular_PktioInit_Thread_Rx_Data_Event_Error_Response_Captured( void )
+{
+    CellularAtErrorResponse_t errorResponse;
+
+    _setUnwrittenErrorResponse( &errorResponse );
+
+    _receiveResponseWithErrorResponse( "+CME ERROR: 405\r\n", &errorResponse, false );
+
+    TEST_ASSERT_TRUE( errorResponse.received );
+    TEST_ASSERT_FALSE( errorResponse.truncated );
+    TEST_ASSERT_EQUAL_STRING( "+CME ERROR: 405", errorResponse.line );
+}
+
+/**
+ * @brief Test that a plain ERROR final result is captured in the attached error response.
+ */
+void test__Cellular_PktioInit_Thread_Rx_Data_Event_Error_Response_Plain_Error_Captured( void )
+{
+    CellularAtErrorResponse_t errorResponse;
+
+    _setUnwrittenErrorResponse( &errorResponse );
+
+    _receiveResponseWithErrorResponse( "ERROR\r\n", &errorResponse, false );
+
+    TEST_ASSERT_TRUE( errorResponse.received );
+    TEST_ASSERT_FALSE( errorResponse.truncated );
+    TEST_ASSERT_EQUAL_STRING( "ERROR", errorResponse.line );
+}
+
+/**
+ * @brief Test that the longest error line that fits the error response is captured without truncation.
+ */
+void test__Cellular_PktioInit_Thread_Rx_Data_Event_Error_Response_Max_Length_Line( void )
+{
+    CellularAtErrorResponse_t errorResponse;
+    char errorLine[ CELLULAR_AT_ERROR_RESPONSE_MAX_LENGTH ];
+    char responseLines[ CELLULAR_AT_ERROR_RESPONSE_MAX_LENGTH + 2U ];
+
+    _setUnwrittenErrorResponse( &errorResponse );
+    _buildCmeErrorResponse( errorLine, responseLines, sizeof( errorLine ) - 1U );
+
+    _receiveResponseWithErrorResponse( responseLines, &errorResponse, false );
+
+    TEST_ASSERT_TRUE( errorResponse.received );
+    TEST_ASSERT_FALSE( errorResponse.truncated );
+    TEST_ASSERT_EQUAL_STRING( errorLine, errorResponse.line );
+}
+
+/**
+ * @brief Test that an error line longer than the error response is truncated, null terminated and flagged.
+ */
+void test__Cellular_PktioInit_Thread_Rx_Data_Event_Error_Response_Truncated( void )
+{
+    CellularAtErrorResponse_t errorResponse;
+    char errorLine[ CELLULAR_AT_ERROR_RESPONSE_MAX_LENGTH + 1U ];
+    char responseLines[ CELLULAR_AT_ERROR_RESPONSE_MAX_LENGTH + 3U ];
+
+    _setUnwrittenErrorResponse( &errorResponse );
+    _buildCmeErrorResponse( errorLine, responseLines, sizeof( errorLine ) - 1U );
+
+    _receiveResponseWithErrorResponse( responseLines, &errorResponse, false );
+
+    TEST_ASSERT_TRUE( errorResponse.received );
+    TEST_ASSERT_TRUE( errorResponse.truncated );
+    TEST_ASSERT_EQUAL( sizeof( errorResponse.line ) - 1U, strlen( errorResponse.line ) );
+    TEST_ASSERT_EQUAL_MEMORY( errorLine, errorResponse.line, sizeof( errorResponse.line ) - 1U );
+}
+
+/**
+ * @brief Test that a success final result doesn't write to the attached error response.
+ */
+void test__Cellular_PktioInit_Thread_Rx_Data_Event_Error_Response_Not_Written_On_Success( void )
+{
+    CellularAtErrorResponse_t errorResponse;
+
+    _setUnwrittenErrorResponse( &errorResponse );
+
+    _receiveResponseWithErrorResponse( "OK\r\n", &errorResponse, true );
+
+    TEST_ASSERT_FALSE( errorResponse.received );
+    TEST_ASSERT_FALSE( errorResponse.truncated );
+    TEST_ASSERT_EQUAL_STRING( "unwritten", errorResponse.line );
+}
+
+/**
+ * @brief Test that an error final result without an attached error response is still reported as an error.
+ */
+void test__Cellular_PktioInit_Thread_Rx_Data_Event_Error_Response_Not_Attached( void )
+{
+    _receiveResponseWithErrorResponse( "+CME ERROR: 405\r\n", NULL, false );
+}
+
 /**
  * @brief Test thread receiving rx data event with extra token for _Cellular_PktioInit to return CELLULAR_PKT_STATUS_OK.
  */

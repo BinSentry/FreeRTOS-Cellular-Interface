@@ -995,6 +995,184 @@ void test__Cellular_PktHandler_AtcmdRequestWithCallback_xQueueReceive_Return_Fai
     TEST_ASSERT_EQUAL( CELLULAR_PKT_STATUS_TIMED_OUT, pktStatus );
 }
 
+/* The error response the request is expected to attach to the context while the AT command is sent. */
+static CellularAtErrorResponse_t * pExpectedPktErrorResponse = NULL;
+
+/* Checks the error response attached to the context while the AT command is sent, and captures an error line
+ * into it like _Cellular_ProcessLine does when the modem returns an error final result. */
+static CellularPktStatus_t _Cellular_PktioSendAtCmd_CheckErrorResponse( CellularContext_t * pContext,
+                                                                        const char * pAtCmd,
+                                                                        CellularATCommandType_t atType,
+                                                                        const char * pAtRspPrefix,
+                                                                        int cmock_num_calls )
+{
+    ( void ) pAtCmd;
+    ( void ) atType;
+    ( void ) pAtRspPrefix;
+    ( void ) cmock_num_calls;
+
+    TEST_ASSERT_EQUAL_PTR( pExpectedPktErrorResponse, pContext->pPktErrorResponse );
+
+    if( pContext->pPktErrorResponse != NULL )
+    {
+        /* The request resets the caller's error response before sending. */
+        TEST_ASSERT_FALSE( pContext->pPktErrorResponse->received );
+        TEST_ASSERT_FALSE( pContext->pPktErrorResponse->truncated );
+        TEST_ASSERT_EQUAL_STRING( "", pContext->pPktErrorResponse->line );
+
+        pContext->pPktErrorResponse->received = true;
+        ( void ) strncpy( pContext->pPktErrorResponse->line, "+CME ERROR: 405",
+                          sizeof( pContext->pPktErrorResponse->line ) - 1U );
+    }
+
+    return CELLULAR_PKT_STATUS_OK;
+}
+
+/* Fills an error response with stale values from a previous request. */
+static void _setStaleErrorResponse( CellularAtErrorResponse_t * pErrorResponse )
+{
+    pErrorResponse->received = true;
+    pErrorResponse->truncated = true;
+    ( void ) strncpy( pErrorResponse->line, "+CME ERROR: 999", sizeof( pErrorResponse->line ) - 1U );
+    pErrorResponse->line[ sizeof( pErrorResponse->line ) - 1U ] = '\0';
+}
+
+/**
+ * @brief Test that _Cellular_PktHandler_AtcmdRequestWithCallback resets the error response, attaches it to the
+ * context while the command is outstanding, keeps the captured error line and detaches it afterwards.
+ */
+void test__Cellular_PktHandler_AtcmdRequestWithCallback_Error_Response_Captured( void )
+{
+    CellularPktStatus_t pktStatus = CELLULAR_PKT_STATUS_OK;
+    CellularAtErrorResponse_t errorResponse;
+    CellularAtReq_t atReqGetFileCrc =
+    {
+        "AT+QFCRC=\"UFS:root.crt\"",
+        CELLULAR_AT_WITH_PREFIX,
+        "+QFCRC",
+        NULL,
+        NULL,
+        0,
+        &errorResponse,
+    };
+    CellularContext_t context;
+
+    memset( &context, 0, sizeof( CellularContext_t ) );
+    _setStaleErrorResponse( &errorResponse );
+    pExpectedPktErrorResponse = &errorResponse;
+    _Cellular_PktioSendAtCmd_Stub( _Cellular_PktioSendAtCmd_CheckErrorResponse );
+    /* xQueueReceive true, and the data is the modem error result. */
+    queueData = CELLULAR_PKT_STATUS_FAILURE;
+
+    pktStatus = _Cellular_PktHandler_AtcmdRequestWithCallback( &context, atReqGetFileCrc, PACKET_REQ_TIMEOUT_MS );
+
+    TEST_ASSERT_EQUAL( CELLULAR_PKT_STATUS_FAILURE, pktStatus );
+    TEST_ASSERT_TRUE( errorResponse.received );
+    TEST_ASSERT_FALSE( errorResponse.truncated );
+    TEST_ASSERT_EQUAL_STRING( "+CME ERROR: 405", errorResponse.line );
+    TEST_ASSERT_NULL( context.pPktErrorResponse );
+}
+
+/**
+ * @brief Test that _Cellular_PktHandler_AtcmdRequestWithCallback detaches the error response when the request
+ * times out, so a late response can't write to the caller's buffer.
+ */
+void test__Cellular_PktHandler_AtcmdRequestWithCallback_Error_Response_Detached_On_Timeout( void )
+{
+    CellularPktStatus_t pktStatus = CELLULAR_PKT_STATUS_OK;
+    CellularAtErrorResponse_t errorResponse;
+    CellularAtReq_t atReqGetFileCrc =
+    {
+        "AT+QFCRC=\"UFS:root.crt\"",
+        CELLULAR_AT_WITH_PREFIX,
+        "+QFCRC",
+        NULL,
+        NULL,
+        0,
+        &errorResponse,
+    };
+    CellularContext_t context;
+
+    memset( &context, 0, sizeof( CellularContext_t ) );
+    _setStaleErrorResponse( &errorResponse );
+    pExpectedPktErrorResponse = &errorResponse;
+    _Cellular_PktioSendAtCmd_Stub( _Cellular_PktioSendAtCmd_CheckErrorResponse );
+    /* xQueueReceive failed. */
+    queueReturnFail = 1;
+
+    pktStatus = _Cellular_PktHandler_AtcmdRequestWithCallback( &context, atReqGetFileCrc, PACKET_REQ_TIMEOUT_MS );
+
+    TEST_ASSERT_EQUAL( CELLULAR_PKT_STATUS_TIMED_OUT, pktStatus );
+    TEST_ASSERT_NULL( context.pPktErrorResponse );
+}
+
+/**
+ * @brief Test that _Cellular_PktHandler_AtcmdRequestWithCallback resets and detaches the error response when the
+ * AT command can't be sent.
+ */
+void test__Cellular_PktHandler_AtcmdRequestWithCallback_Error_Response_Send_Fail( void )
+{
+    CellularPktStatus_t pktStatus = CELLULAR_PKT_STATUS_OK;
+    CellularAtErrorResponse_t errorResponse;
+    CellularAtReq_t atReqGetFileCrc =
+    {
+        "AT+QFCRC=\"UFS:root.crt\"",
+        CELLULAR_AT_WITH_PREFIX,
+        "+QFCRC",
+        NULL,
+        NULL,
+        0,
+        &errorResponse,
+    };
+    CellularContext_t context;
+
+    memset( &context, 0, sizeof( CellularContext_t ) );
+    _setStaleErrorResponse( &errorResponse );
+    _Cellular_PktioSendAtCmd_IgnoreAndReturn( CELLULAR_PKT_STATUS_BAD_PARAM );
+
+    pktStatus = _Cellular_PktHandler_AtcmdRequestWithCallback( &context, atReqGetFileCrc, PACKET_REQ_TIMEOUT_MS );
+
+    TEST_ASSERT_EQUAL( CELLULAR_PKT_STATUS_BAD_PARAM, pktStatus );
+    TEST_ASSERT_FALSE( errorResponse.received );
+    TEST_ASSERT_FALSE( errorResponse.truncated );
+    TEST_ASSERT_EQUAL_STRING( "", errorResponse.line );
+    TEST_ASSERT_NULL( context.pPktErrorResponse );
+}
+
+/**
+ * @brief Test that a request without an error response replaces an error response left attached to the context.
+ */
+void test__Cellular_PktHandler_AtcmdRequestWithCallback_No_Error_Response( void )
+{
+    CellularPktStatus_t pktStatus = CELLULAR_PKT_STATUS_OK;
+    CellularAtErrorResponse_t staleErrorResponse;
+    CellularAtReq_t atReqGetMccMnc =
+    {
+        "AT+COPS?",
+        CELLULAR_AT_WITH_PREFIX,
+        "+COPS",
+        NULL,
+        NULL,
+        sizeof( int32_t ),
+        NULL,
+    };
+    CellularContext_t context;
+
+    memset( &context, 0, sizeof( CellularContext_t ) );
+    _setStaleErrorResponse( &staleErrorResponse );
+    context.pPktErrorResponse = &staleErrorResponse;
+    pExpectedPktErrorResponse = NULL;
+    _Cellular_PktioSendAtCmd_Stub( _Cellular_PktioSendAtCmd_CheckErrorResponse );
+    /* xQueueReceive true, and the data is the modem error result. */
+    queueData = CELLULAR_PKT_STATUS_FAILURE;
+
+    pktStatus = _Cellular_PktHandler_AtcmdRequestWithCallback( &context, atReqGetMccMnc, PACKET_REQ_TIMEOUT_MS );
+
+    TEST_ASSERT_EQUAL( CELLULAR_PKT_STATUS_FAILURE, pktStatus );
+    TEST_ASSERT_EQUAL_STRING( "+CME ERROR: 999", staleErrorResponse.line );
+    TEST_ASSERT_NULL( context.pPktErrorResponse );
+}
+
 /**
  * @brief Test that null Context case for _Cellular_TimeoutAtcmdDataRecvRequestWithCallback.
  */
