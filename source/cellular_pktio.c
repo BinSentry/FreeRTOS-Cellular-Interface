@@ -366,7 +366,10 @@ static CellularPktStatus_t _Cellular_ProcessLine( CellularContext_t * pContext,
                 pResp->status = false;
                 pkStatus = CELLULAR_PKT_STATUS_OK;
 
-                /* Capture the error line for the requester, PktRespMutex is held. */
+                /* Capture the error line for the requester, PktRespMutex is held. The line is attributed to
+                 * whichever request is attached now, the same way the status queued below is: if the previous
+                 * request timed out and a new one attached between _getMsgType() and this lock, the late line
+                 * is reported against the new request. */
                 if( pContext->pPktErrorResponse != NULL )
                 {
                     const size_t lineLength = strnlen( pLine, sizeof( pContext->pPktErrorResponse->line ) - 1U );
