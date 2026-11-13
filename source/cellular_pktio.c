@@ -365,6 +365,19 @@ static CellularPktStatus_t _Cellular_ProcessLine( CellularContext_t * pContext,
             {
                 pResp->status = false;
                 pkStatus = CELLULAR_PKT_STATUS_OK;
+
+                /* Capture the error line for the requester, PktRespMutex is held. The line is attributed to
+                 * whichever request is attached now, the same way the status queued below is: if the previous
+                 * request timed out and a new one attached between _getMsgType() and this lock, the late line
+                 * is reported against the new request. */
+                if( pContext->pPktErrorResponse != NULL )
+                {
+                    const size_t lineLength = strnlen( pLine, sizeof( pContext->pPktErrorResponse->line ) - 1U );
+                    ( void ) memcpy( pContext->pPktErrorResponse->line, pLine, lineLength );
+                    pContext->pPktErrorResponse->line[ lineLength ] = '\0';
+                    pContext->pPktErrorResponse->truncated = ( pLine[ lineLength ] != '\0' );
+                    pContext->pPktErrorResponse->received = true;
+                }
             }
             else
             {
@@ -375,7 +388,7 @@ static CellularPktStatus_t _Cellular_ProcessLine( CellularContext_t * pContext,
 
     if( ( result == true ) && ( pResp->status == false ) )
     {
-        LogWarn( ( "Modem return ERROR: line %s, cmd : %s, respPrefix %s, status: %d",
+        LogWarn( ( "Modem return ERROR: cmd %s, line : %s, respPrefix %s, status: %d",
                    ( pContext->pCurrentCmd != NULL ? pContext->pCurrentCmd : "NULL" ),
                    pLine,
                    ( pRespPrefix != NULL ? pRespPrefix : "NULL" ),
@@ -1252,6 +1265,7 @@ CellularPktStatus_t _Cellular_PktioSendAtCmd( CellularContext_t * pContext,
     uint32_t cmdLen = 0, newCmdLen = 0;
     uint32_t sentLen = 0;
     CellularPktStatus_t pktStatus = CELLULAR_PKT_STATUS_OK;
+    CellularCommInterfaceError_t sendError = IOT_COMM_INTERFACE_SUCCESS;
 
     if( pContext == NULL )
     {
@@ -1300,9 +1314,9 @@ CellularPktStatus_t _Cellular_PktioSendAtCmd( CellularContext_t * pContext,
 
             PlatformMutex_Unlock( &pContext->PktRespMutex );
 
-            CellularCommInterfaceError_t sendError = pContext->pCommIntf->send( pContext->hPktioCommIntf,
-                                                        ( const uint8_t * ) &pContext->pktioSendBuf, newCmdLen,
-                                                        CELLULAR_COMM_IF_SEND_TIMEOUT_MS, &sentLen );
+            sendError = pContext->pCommIntf->send( pContext->hPktioCommIntf,
+                                                   ( const uint8_t * ) &pContext->pktioSendBuf, newCmdLen,
+                                                   CELLULAR_COMM_IF_SEND_TIMEOUT_MS, &sentLen );
             if (sendError != IOT_COMM_INTERFACE_SUCCESS) {
                 LogError( ( "Send error: %d.", sendError ) );
                 pktStatus = CELLULAR_PKT_STATUS_FAILURE;

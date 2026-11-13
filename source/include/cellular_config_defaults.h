@@ -422,6 +422,20 @@
 #endif
 
 /**
+ * @brief Cellular AT command error response line length.<br>
+ *
+ * The maximum length (including null terminator) of the modem error final result
+ * line (e.g. "+CME ERROR: 405") captured for a request via #CellularAtErrorResponse_t.
+ * Longer lines are truncated.
+ *
+ * <b>Possible values:</b>`Any positive integer`<br>
+ * <b>Default value (if undefined):</b> 48
+ */
+#ifndef CELLULAR_AT_ERROR_RESPONSE_MAX_LENGTH
+    #define CELLULAR_AT_ERROR_RESPONSE_MAX_LENGTH    ( 48U )
+#endif
+
+/**
  * @brief Macro to check prefix leading char.<br>
  *
  * Cellular interface requires prefix string starts with "+". Some cellular modem

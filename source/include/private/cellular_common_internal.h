@@ -159,6 +159,7 @@ struct CellularContext
     void * pDataSendPrefixCBContext;                               /**<  The pCallbackContext passed to CellularATCommandDataSendPrefixCallback_t. */
     void * pPktUsrData;                                            /**<  The pData passed to CellularATCommandResponseReceivedCallback_t. */
     uint16_t PktUsrDataLen;                                        /**<  The dataLen passed to CellularATCommandResponseReceivedCallback_t. */
+    CellularAtErrorResponse_t * pPktErrorResponse;                 /**<  The pErrorResponse of the current request, only accessed with PktRespMutex held. */
     const char * pCurrentCmd;                                      /**<  Debug purpose. */
 
     /* Packet IO. */

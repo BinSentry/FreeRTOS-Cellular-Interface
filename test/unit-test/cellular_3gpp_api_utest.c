@@ -3134,6 +3134,10 @@ void test_Cellular_CommonGetServiceStatus_Cb__Cellular_RecvFuncGetNetworkReg_Par
     _Cellular_AtcmdRequestWithCallback_StubWithCallback( Mock_AtcmdRequestWithCallback__Cellular_RecvFuncGetNetworkReg );
     _Cellular_TranslatePktStatus_ExpectAndReturn( CELLULAR_PKT_STATUS_INVALID_HANDLE, CELLULAR_INTERNAL_FAILURE );
 
+    /* Prefix is removed for both URC and non-URC responses. */
+    Cellular_ATRemovePrefix_IgnoreAndReturn( CELLULAR_AT_SUCCESS );
+    _Cellular_TranslateAtCoreStatus_IgnoreAndReturn( CELLULAR_PKT_STATUS_OK );
+
     /* Return error in _Cellular_ParseRegStatus. */
     Cellular_ATRemoveAllDoubleQuote_IgnoreAndReturn( CELLULAR_AT_BAD_PARAMETER );
     _Cellular_TranslateAtCoreStatus_IgnoreAndReturn( CELLULAR_PKT_STATUS_INVALID_HANDLE );

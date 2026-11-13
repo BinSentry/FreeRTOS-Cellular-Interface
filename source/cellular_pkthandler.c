@@ -206,6 +206,14 @@ static CellularPktStatus_t _Cellular_AtcmdRequestTimeoutWithCallbackRaw( Cellula
     CellularPktStatus_t pktStatus = CELLULAR_PKT_STATUS_OK;
     BaseType_t qRet = pdFALSE;
 
+    /* The caller's error response reflects this request only, whether or not it is sent. */
+    if( atReq.pErrorResponse != NULL )
+    {
+        atReq.pErrorResponse->received = false;
+        atReq.pErrorResponse->truncated = false;
+        atReq.pErrorResponse->line[ 0 ] = '\0';
+    }
+
     if( atReq.pAtCmd == NULL )
     {
         LogError( ( "PKT_STATUS_BAD_REQUEST, null AT param" ) );
@@ -221,6 +229,7 @@ static CellularPktStatus_t _Cellular_AtcmdRequestTimeoutWithCallbackRaw( Cellula
         pContext->pPktUsrData = atReq.pData;
         pContext->PktUsrDataLen = ( uint16_t ) atReq.dataLen;
         pContext->pCurrentCmd = atReq.pAtCmd;
+        pContext->pPktErrorResponse = atReq.pErrorResponse;
         PlatformMutex_Unlock( &pContext->PktRespMutex );
 
         pktStatus = _Cellular_PktioSendAtCmd( pContext, atReq.pAtCmd, atReq.atCmdType, atReq.pAtRspPrefix );
@@ -256,6 +265,7 @@ static CellularPktStatus_t _Cellular_AtcmdRequestTimeoutWithCallbackRaw( Cellula
         PlatformMutex_Lock( &pContext->PktRespMutex );
         pContext->PktioAtCmdType = CELLULAR_AT_NO_COMMAND;
         pContext->pktRespCB = NULL;
+        pContext->pPktErrorResponse = NULL;    // must be cleared so a late response (after timeout) can't write to the caller's (stack) buffer
         pContext->pCurrentCmd = NULL;
         PlatformMutex_Unlock( &pContext->PktRespMutex );
         LogDebug( ( "<<<<<Exit sending [%s] status[%d]<<<<<", atReq.pAtCmd, pktStatus ) );
