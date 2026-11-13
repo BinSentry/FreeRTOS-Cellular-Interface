@@ -53,7 +53,6 @@ static int parseCellIdInRegCase = 0;
 static int parseRatInfoInRegCase = 0;
 static int parseRejectTypeInRegCase = 0;
 static int parseRejectCauseInRegCase = 0;
-static int returnNULL = 0;
 static int atoiFailure = 0;
 /* ============================   UNITY FIXTURES ============================ */
 
@@ -66,7 +65,6 @@ void setUp()
     parseRatInfoInRegCase = 0;
     parseRejectTypeInRegCase = 0;
     parseRejectCauseInRegCase = 0;
-    returnNULL = 0;
     atoiFailure = 0;
 }
 
@@ -404,15 +402,8 @@ CellularATError_t Mock_Cellular_ATGetNextTok_Callback( char ** ppString,
         }
         else
         {
-            if( returnNULL != 0 )
-            {
-                /* Do nothing to return NULL token. */
-            }
-            else
-            {
-                *ppTokOutput = malloc( sizeof( pFitNum ) );
-                memcpy( *ppTokOutput, pFitNum, sizeof( pFitNum ) );
-            }
+            *ppTokOutput = malloc( sizeof( pFitNum ) );
+            memcpy( *ppTokOutput, pFitNum, sizeof( pFitNum ) );
         }
     }
     else
@@ -737,8 +728,9 @@ void test_Cellular_ParseRegStatus_CELLULAR_REG_TYPE_CEREG_Happy_Path( void )
     Cellular_ATStrtoi_StubWithCallback( Mock_Cellular_ATStrtoi_Callback );
     Cellular_ATStrtoui_StubWithCallback( Mock_Cellular_ATStrtoui_Callback );
     _Cellular_TranslateAtCoreStatus_StubWithCallback( Mock__Cellular_TranslateAtCoreStatus_Callback );
-    /* NOTE: returnNULL not used, a non-URC reg status always starts with the URC mode (<n>) token so the first
-     *       token can't be NULL, end of tokens is indicated by Cellular_ATGetNextTok() returning an error instead */
+    /* NOTE: Cellular_ATGetNextTok() never returns success with a NULL token (an empty string fails validation,
+     *       otherwise the token is the string itself or a strtok() result), so the end of the tokens is signalled
+     *       by it returning an error, not by a NULL token. */
     packetStatus = _Cellular_ParseRegStatus( &context, "+CEREG: 2", false, CELLULAR_REG_TYPE_CEREG );
     TEST_ASSERT_EQUAL( CELLULAR_PKT_STATUS_OK, packetStatus );
 }
