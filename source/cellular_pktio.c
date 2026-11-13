@@ -388,7 +388,7 @@ static CellularPktStatus_t _Cellular_ProcessLine( CellularContext_t * pContext,
 
     if( ( result == true ) && ( pResp->status == false ) )
     {
-        LogWarn( ( "Modem return ERROR: line %s, cmd : %s, respPrefix %s, status: %d",
+        LogWarn( ( "Modem return ERROR: cmd %s, line : %s, respPrefix %s, status: %d",
                    ( pContext->pCurrentCmd != NULL ? pContext->pCurrentCmd : "NULL" ),
                    pLine,
                    ( pRespPrefix != NULL ? pRespPrefix : "NULL" ),
