@@ -908,7 +908,7 @@ void test__Cellular_PktHandler_AtcmdRequestWithCallback__Cellular_PktioSendAtCmd
         "+COPS",
         NULL,
         NULL,
-        sizeof( int32_t ),
+        0,
     };
     CellularContext_t context;
 
@@ -931,7 +931,7 @@ void test__Cellular_PktHandler_AtcmdRequestWithCallback__Cellular_PktioSendAtCmd
         "+COPS",
         NULL,
         NULL,
-        sizeof( int32_t ),
+        0,
     };
     CellularContext_t context;
 
@@ -956,7 +956,7 @@ void test__Cellular_AtcmdRequestWithCallback__Cellular_PktioSendAtCmd_Return_Exp
         "+COPS",
         NULL,
         NULL,
-        sizeof( int32_t ),
+        0,
     };
     CellularContext_t context;
 
@@ -983,7 +983,7 @@ void test__Cellular_PktHandler_AtcmdRequestWithCallback_xQueueReceive_Return_Fai
         "+COPS",
         NULL,
         NULL,
-        sizeof( int32_t ),
+        0,
     };
     CellularContext_t context;
 
@@ -1185,7 +1185,7 @@ void test__Cellular_PktHandler_AtcmdRequestWithCallback_No_Error_Response( void 
         "+COPS",
         NULL,
         NULL,
-        sizeof( int32_t ),
+        0,
         NULL,
     };
     CellularContext_t context;
@@ -1274,7 +1274,7 @@ void test__Cellular_AtcmdDataSend_Null_Req( void )
         "+COPS",
         NULL,
         NULL,
-        sizeof( int32_t ),
+        0,
     };
     CellularContext_t context;
 
@@ -1311,7 +1311,7 @@ void test__Cellular_AtcmdDataSend_Happy_Path( void )
         "+COPS",
         NULL,
         NULL,
-        sizeof( int32_t ),
+        0,
     };
     CellularContext_t context;
 
@@ -1369,7 +1369,7 @@ void test__Cellular_AtcmdDataSend_call__Cellular_DataSendWithTimeoutDelayRaw_Dat
         "+COPS",
         NULL,
         NULL,
-        sizeof( int32_t ),
+        0,
     };
     CellularContext_t context;
 
@@ -1419,7 +1419,7 @@ void test__Cellular_AtcmdDataSend_call__Cellular_DataSendWithTimeoutDelayRaw_Une
         "+COPS",
         NULL,
         NULL,
-        sizeof( int32_t ),
+        0,
     };
     CellularContext_t context;
 
@@ -1459,7 +1459,7 @@ void test__Cellular_AtcmdDataSend_call__Cellular_DataSendWithTimeoutDelayRaw_Une
         "+COPS",
         NULL,
         NULL,
-        sizeof( int32_t ),
+        0,
     };
     CellularContext_t context;
 
@@ -1500,7 +1500,7 @@ void test__Cellular_AtcmdDataSend_call__Cellular_DataSendWithTimeoutDelayRaw_Fai
         "+COPS",
         NULL,
         NULL,
-        sizeof( int32_t ),
+        0,
     };
     CellularContext_t context;
 
@@ -1542,7 +1542,7 @@ void test__Cellular_AtcmdDataSend_call__Cellular_DataSendWithTimeoutDelayRaw_xQu
         "+COPS",
         NULL,
         NULL,
-        sizeof( int32_t ),
+        0,
     };
     CellularContext_t context;
 
@@ -1585,7 +1585,7 @@ void test__Cellular_TimeoutAtcmdDataSendSuccessToken_Null_Req( void )
         "+COPS",
         NULL,
         NULL,
-        sizeof( int32_t ),
+        0,
     };
     CellularContext_t context;
 
@@ -1622,7 +1622,7 @@ void test__Cellular_TimeoutAtcmdDataSendSuccessToken_Happy_Path( void )
         "+COPS",
         NULL,
         NULL,
-        sizeof( int32_t ),
+        0,
     };
     CellularContext_t context;
 
@@ -1901,7 +1901,7 @@ void test__Cellular_AtcmdRequestSuccessToken_Cellular_PktioSendAtCmd_Return_OK( 
         "+COPS",
         NULL,
         NULL,
-        sizeof( int32_t ),
+        0,
     };
     CellularContext_t context = { 0 };
     const char * successTokenTable[] = { "1, CONNECT CLOSE" };
