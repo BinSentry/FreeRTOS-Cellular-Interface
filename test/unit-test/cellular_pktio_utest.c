@@ -1819,11 +1819,13 @@ void test__Cellular_PktioInit_Thread_Rx_Data_Event_TOKEN_TABLE_ERROR_TOKEN( void
     TEST_ASSERT_EQUAL( CELLULAR_PKT_STATUS_OK, pktStatus );
 }
 
-/* Receives pResponseLines in the pktio thread for a CELLULAR_AT_NO_RESULT command with pErrorResponse attached,
- * and checks the command status reported to the packet handler. */
-static void _receiveResponseWithErrorResponse( const char * pResponseLines,
-                                               CellularAtErrorResponse_t * pErrorResponse,
-                                               bool expectedCommandStatus )
+/* Receives pResponseLines in the pktio thread for a command of commandType expecting pResponsePrefix (NULL for
+ * none) with pErrorResponse attached, and checks the command status reported to the packet handler. */
+static void _receiveResponseWithErrorResponseForCommand( CellularATCommandType_t commandType,
+                                                         const char * pResponsePrefix,
+                                                         const char * pResponseLines,
+                                                         CellularAtErrorResponse_t * pErrorResponse,
+                                                         bool expectedCommandStatus )
 {
     CellularPktStatus_t pktStatus = CELLULAR_PKT_STATUS_OK;
     CellularContext_t context;
@@ -1836,12 +1838,13 @@ static void _receiveResponseWithErrorResponse( const char * pResponseLines,
     context.pCommIntf = pCommIntf;
     context.pPktioShutdownCB = _shutdownCallback;
     context.pPktErrorResponse = pErrorResponse;
+    context.pRespPrefix = pResponsePrefix;
 
-    /* Test the rx_data event with CELLULAR_AT_NO_RESULT type AT command. */
+    /* Test the rx_data event with the requested type of AT command. */
     atCmdStatusUndefindTest = !expectedCommandStatus;
     pktioEvtMask = PKTIO_EVT_MASK_RX_DATA;
     recvCount = 1;
-    atCmdType = CELLULAR_AT_NO_RESULT;
+    atCmdType = commandType;
     testCommIfRecvType = COMM_IF_RECV_CUSTOM_STRING;
     ( void ) strncpy( responseLines, pResponseLines, sizeof( responseLines ) - 1U );
     pCommIntfRecvCustomString = responseLines;
@@ -1856,6 +1859,15 @@ static void _receiveResponseWithErrorResponse( const char * pResponseLines,
 
     /* Verify the command status, false if the modem returned an error final result. */
     TEST_ASSERT_EQUAL( expectedCommandStatus, atCmdStatusUndefindTest );
+}
+
+/* The same for a CELLULAR_AT_NO_RESULT command. */
+static void _receiveResponseWithErrorResponse( const char * pResponseLines,
+                                               CellularAtErrorResponse_t * pErrorResponse,
+                                               bool expectedCommandStatus )
+{
+    _receiveResponseWithErrorResponseForCommand( CELLULAR_AT_NO_RESULT, NULL, pResponseLines, pErrorResponse,
+                                                 expectedCommandStatus );
 }
 
 /* Fills an error response with values that show whether it was written. */
@@ -1978,6 +1990,59 @@ void test__Cellular_PktioInit_Thread_Rx_Data_Event_Error_Response_Not_Written_On
 void test__Cellular_PktioInit_Thread_Rx_Data_Event_Error_Response_Not_Attached( void )
 {
     _receiveResponseWithErrorResponse( "+CME ERROR: 405\r\n", NULL, false );
+}
+
+/**
+ * @brief Test that a CME error final result is captured for a CELLULAR_AT_WITH_PREFIX command (the AT+QFCRC
+ * shape): the error line is not taken for the expected "+QFCRC" response.
+ */
+void test__Cellular_PktioInit_Thread_Rx_Data_Event_Error_Response_Captured_With_Prefix( void )
+{
+    CellularAtErrorResponse_t errorResponse;
+
+    _setUnwrittenErrorResponse( &errorResponse );
+
+    _receiveResponseWithErrorResponseForCommand( CELLULAR_AT_WITH_PREFIX, "+QFCRC", "+CME ERROR: 405\r\n",
+                                                 &errorResponse, false );
+
+    TEST_ASSERT_TRUE( errorResponse.received );
+    TEST_ASSERT_FALSE( errorResponse.truncated );
+    TEST_ASSERT_EQUAL_STRING( "+CME ERROR: 405", errorResponse.line );
+}
+
+/**
+ * @brief Test that the expected prefixed response followed by OK doesn't write to the attached error response.
+ */
+void test__Cellular_PktioInit_Thread_Rx_Data_Event_Error_Response_Not_Written_On_Prefixed_Success( void )
+{
+    CellularAtErrorResponse_t errorResponse;
+
+    _setUnwrittenErrorResponse( &errorResponse );
+
+    _receiveResponseWithErrorResponseForCommand( CELLULAR_AT_WITH_PREFIX, "+QFCRC",
+                                                 "+QFCRC: D5E1FF1D,1A2B,3C4D\r\nOK\r\n", &errorResponse, true );
+
+    TEST_ASSERT_FALSE( errorResponse.received );
+    TEST_ASSERT_FALSE( errorResponse.truncated );
+    TEST_ASSERT_EQUAL_STRING( "unwritten", errorResponse.line );
+}
+
+/**
+ * @brief Test that a URC line arriving before the error final result doesn't disturb the capture.
+ */
+void test__Cellular_PktioInit_Thread_Rx_Data_Event_Error_Response_Captured_After_Urc( void )
+{
+    CellularAtErrorResponse_t errorResponse;
+
+    _setUnwrittenErrorResponse( &errorResponse );
+
+    _receiveResponseWithErrorResponseForCommand( CELLULAR_AT_WITH_PREFIX, "+QFCRC",
+                                                 "+QIND: \"csq\",15,99\r\n+CME ERROR: 405\r\n", &errorResponse,
+                                                 false );
+
+    TEST_ASSERT_TRUE( errorResponse.received );
+    TEST_ASSERT_FALSE( errorResponse.truncated );
+    TEST_ASSERT_EQUAL_STRING( "+CME ERROR: 405", errorResponse.line );
 }
 
 /**
