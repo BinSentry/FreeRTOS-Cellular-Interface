@@ -64,6 +64,8 @@
 static uint16_t queueData = CELLULAR_PKT_STATUS_BAD_PARAM;
 static int32_t queueReturnFail = 0;
 static int32_t queueCreateFail = 0;
+static int32_t queueResetCount = 0;
+static uint16_t modemAnswer = 0;
 static int32_t pktRespCBReturn = 0;
 static bool passCompareString = false;
 static char * pCompareString = NULL;
@@ -181,6 +183,8 @@ void setUp()
     queueData = 0;
     queueReturnFail = 0;
     pktRespCBReturn = 0;
+    queueResetCount = 0;
+    modemAnswer = 0;
 }
 
 /* Called after each test method. */
@@ -260,6 +264,36 @@ QueueHandle_t MockxQueueCreate( int32_t uxQueueLength,
     {
         return NULL;
     }
+}
+
+/* The queue holds one status, modelled by queueData: a reset empties it. */
+BaseType_t MockxQueueReset( QueueHandle_t queue )
+{
+    ( void ) queue;
+
+    queueData = 0;
+    queueResetCount++;
+
+    return true;
+}
+
+/* Plays the modem: the answer (modemAnswer, one status per byte as MockxQueueReceive reads it) is queued once the
+ * command was sent, the way a real answer follows the command. */
+static CellularPktStatus_t _Cellular_PktioSendAtCmd_Answer( CellularContext_t * pContext,
+                                                            const char * pAtCmd,
+                                                            CellularATCommandType_t atType,
+                                                            const char * pAtRspPrefix,
+                                                            int cmock_num_calls )
+{
+    ( void ) pContext;
+    ( void ) pAtCmd;
+    ( void ) atType;
+    ( void ) pAtRspPrefix;
+    ( void ) cmock_num_calls;
+
+    queueData = modemAnswer;
+
+    return CELLULAR_PKT_STATUS_OK;
 }
 
 BaseType_t MockxQueueSend( QueueHandle_t queue,
@@ -962,10 +996,10 @@ void test__Cellular_AtcmdRequestWithCallback__Cellular_PktioSendAtCmd_Return_Exp
 
     memset( &context, 0, sizeof( CellularContext_t ) );
 
-    _Cellular_PktioSendAtCmd_IgnoreAndReturn( CELLULAR_PKT_STATUS_OK );
+    _Cellular_PktioSendAtCmd_Stub( _Cellular_PktioSendAtCmd_Answer );
 
     /* xQueueReceive true, and the data is CELLULAR_PKT_STATUS_BAD_PARAM. */
-    queueData = CELLULAR_PKT_STATUS_BAD_PARAM;
+    modemAnswer = CELLULAR_PKT_STATUS_BAD_PARAM;
     pktStatus = _Cellular_PktHandler_AtcmdRequestWithCallback( &context, atReqGetMccMnc, PACKET_REQ_TIMEOUT_MS );
     TEST_ASSERT_EQUAL( CELLULAR_PKT_STATUS_BAD_PARAM, pktStatus );
 }
@@ -1025,6 +1059,8 @@ static CellularPktStatus_t _Cellular_PktioSendAtCmd_CheckErrorResponse( Cellular
                           sizeof( pContext->pPktErrorResponse->line ) - 1U );
     }
 
+    queueData = modemAnswer;
+
     return CELLULAR_PKT_STATUS_OK;
 }
 
@@ -1062,7 +1098,7 @@ void test__Cellular_PktHandler_AtcmdRequestWithCallback_Error_Response_Captured(
     pExpectedPktErrorResponse = &errorResponse;
     _Cellular_PktioSendAtCmd_Stub( _Cellular_PktioSendAtCmd_CheckErrorResponse );
     /* xQueueReceive true, and the data is the modem error result. */
-    queueData = CELLULAR_PKT_STATUS_FAILURE;
+    modemAnswer = CELLULAR_PKT_STATUS_FAILURE;
 
     pktStatus = _Cellular_PktHandler_AtcmdRequestWithCallback( &context, atReqGetFileCrc, PACKET_REQ_TIMEOUT_MS );
 
@@ -1071,6 +1107,57 @@ void test__Cellular_PktHandler_AtcmdRequestWithCallback_Error_Response_Captured(
     TEST_ASSERT_FALSE( errorResponse.truncated );
     TEST_ASSERT_EQUAL_STRING( "+CME ERROR: 405", errorResponse.line );
     TEST_ASSERT_NULL( context.pPktErrorResponse );
+}
+
+/* Plays the modem: the request's own answer is queued only once the command was sent, by which time the stale
+ * status queued before the request attached must be gone. */
+static CellularPktStatus_t _Cellular_PktioSendAtCmd_AnswerAfterReset( CellularContext_t * pContext,
+                                                                      const char * pAtCmd,
+                                                                      CellularATCommandType_t atType,
+                                                                      const char * pAtRspPrefix,
+                                                                      int cmock_num_calls )
+{
+    ( void ) pContext;
+    ( void ) pAtCmd;
+    ( void ) atType;
+    ( void ) pAtRspPrefix;
+    ( void ) cmock_num_calls;
+
+    TEST_ASSERT_EQUAL( 1, queueResetCount );
+    TEST_ASSERT_EQUAL( 0, queueData );
+    queueData = CELLULAR_PKT_STATUS_OK;
+
+    return CELLULAR_PKT_STATUS_OK;
+}
+
+/**
+ * @brief Test that _Cellular_PktHandler_AtcmdRequestWithCallback discards a status queued before the request
+ * attached (a late answer to a request that timed out) instead of returning it as this request's result.
+ */
+void test__Cellular_PktHandler_AtcmdRequestWithCallback_Stale_Response_Discarded_Before_Send( void )
+{
+    CellularPktStatus_t pktStatus = CELLULAR_PKT_STATUS_OK;
+    CellularAtReq_t atReqGetFileCrc =
+    {
+        "AT+QFCRC=\"UFS:root.crt\"",
+        CELLULAR_AT_WITH_PREFIX,
+        "+QFCRC",
+        NULL,
+        NULL,
+        0,
+        NULL,
+    };
+    CellularContext_t context;
+
+    memset( &context, 0, sizeof( CellularContext_t ) );
+    _Cellular_PktioSendAtCmd_Stub( _Cellular_PktioSendAtCmd_AnswerAfterReset );
+    /* The previous request's late answer is in the queue. */
+    queueData = CELLULAR_PKT_STATUS_FAILURE;
+
+    pktStatus = _Cellular_PktHandler_AtcmdRequestWithCallback( &context, atReqGetFileCrc, PACKET_REQ_TIMEOUT_MS );
+
+    TEST_ASSERT_EQUAL( CELLULAR_PKT_STATUS_OK, pktStatus );
+    TEST_ASSERT_EQUAL( 1, queueResetCount );
 }
 
 /**
@@ -1196,7 +1283,7 @@ void test__Cellular_PktHandler_AtcmdRequestWithCallback_No_Error_Response( void 
     pExpectedPktErrorResponse = NULL;
     _Cellular_PktioSendAtCmd_Stub( _Cellular_PktioSendAtCmd_CheckErrorResponse );
     /* xQueueReceive true, and the data is the modem error result. */
-    queueData = CELLULAR_PKT_STATUS_FAILURE;
+    modemAnswer = CELLULAR_PKT_STATUS_FAILURE;
 
     pktStatus = _Cellular_PktHandler_AtcmdRequestWithCallback( &context, atReqGetMccMnc, PACKET_REQ_TIMEOUT_MS );
 
@@ -1316,14 +1403,15 @@ void test__Cellular_AtcmdDataSend_Happy_Path( void )
     CellularContext_t context;
 
     memset( &context, 0, sizeof( CellularContext_t ) );
-    _Cellular_PktioSendAtCmd_IgnoreAndReturn( CELLULAR_PKT_STATUS_OK );
-    /* xQueueReceive true, and the data is CELLULAR_PKT_STATUS_OK. */
-    queueData = CELLULAR_PKT_STATUS_OK;
+    _Cellular_PktioSendAtCmd_Stub( _Cellular_PktioSendAtCmd_Answer );
+    /* xQueueReceive true, and the data is CELLULAR_PKT_STATUS_OK for the command and for the data. */
+    modemAnswer = CELLULAR_PKT_STATUS_OK;
     _Cellular_PktioSendData_IgnoreAndReturn( CELLULAR_AT_CMD_TYPICAL_MAX_SIZE );
     _Cellular_PktioSendData_IgnoreAndReturn( CELLULAR_AT_CMD_TYPICAL_MAX_SIZE );
-    queueData = CELLULAR_PKT_STATUS_OK;
     pktStatus = _Cellular_AtcmdDataSend( &context, atReq, atDataReq, NULL, NULL, 0, 0, 0 );
     TEST_ASSERT_EQUAL( CELLULAR_PKT_STATUS_OK, pktStatus );
+    /* Only the command phase resets the queue, the data phase continues the same request. */
+    TEST_ASSERT_EQUAL( 1, queueResetCount );
 }
 
 /**
@@ -1507,12 +1595,11 @@ void test__Cellular_AtcmdDataSend_call__Cellular_DataSendWithTimeoutDelayRaw_Fai
     memset( &context, 0, sizeof( CellularContext_t ) );
 
     /* Test xQueueReceive return ok, but the data is not CELLULAR_PKT_STATUS_OK. */
-    _Cellular_PktioSendAtCmd_IgnoreAndReturn( CELLULAR_PKT_STATUS_OK );
-    /* xQueueReceive true, and the data is CELLULAR_PKT_STATUS_OK. */
-    queueData = CELLULAR_PKT_STATUS_OK;
+    _Cellular_PktioSendAtCmd_Stub( _Cellular_PktioSendAtCmd_Answer );
+    /* xQueueReceive true, and the data is CELLULAR_PKT_STATUS_OK for the command, then not for the data. */
+    modemAnswer = CELLULAR_PKT_STATUS_OK | ( CELLULAR_PKT_STATUS_BAD_PARAM << 8 );
     _Cellular_PktioSendData_IgnoreAndReturn( CELLULAR_AT_CMD_TYPICAL_MAX_SIZE );
     _Cellular_PktioSendData_IgnoreAndReturn( CELLULAR_AT_CMD_TYPICAL_MAX_SIZE );
-    queueData = queueData | ( CELLULAR_PKT_STATUS_BAD_PARAM << 8 );
     pktStatus = _Cellular_AtcmdDataSend( &context, atReq, atDataReq, NULL, NULL, 0, 0, 0 );
     TEST_ASSERT_EQUAL( CELLULAR_PKT_STATUS_BAD_PARAM, pktStatus );
 }

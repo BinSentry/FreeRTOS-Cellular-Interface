@@ -230,6 +230,12 @@ static CellularPktStatus_t _Cellular_AtcmdRequestTimeoutWithCallbackRaw( Cellula
         pContext->PktUsrDataLen = ( uint16_t ) atReq.dataLen;
         pContext->pCurrentCmd = atReq.pAtCmd;
         pContext->pPktErrorResponse = atReq.pErrorResponse;
+
+        /* Nothing in the response queue can belong to this request, it hasn't been sent: a status still queued
+         * here is the answer to a request that timed out, which arrived after that request detached and before
+         * this one attached. Discard it so it isn't returned as this request's result. The data phase of a send
+         * continues this request and doesn't reset. See the late line comment in _Cellular_ProcessLine(). */
+        ( void ) xQueueReset( pContext->pktRespQueue );
         PlatformMutex_Unlock( &pContext->PktRespMutex );
 
         pktStatus = _Cellular_PktioSendAtCmd( pContext, atReq.pAtCmd, atReq.atCmdType, atReq.pAtRspPrefix );

@@ -59,6 +59,7 @@
 #define xQueueSend                           MockxQueueSend
 #define xQueueReceive                        MockxQueueReceive
 #define xQueueCreate                         MockxQueueCreate
+#define xQueueReset                          MockxQueueReset
 
 #define PlatformMutex_Create                 MockPlatformMutex_Create
 #define PlatformMutex_Destroy                MockPlatformMutex_Destroy
@@ -223,6 +224,8 @@ QueueHandle_t MockxQueueCreate( int32_t uxQueueLength,
                                 uint32_t uxItemSize );
 
 uint16_t MockvQueueDelete( QueueHandle_t queue );
+
+BaseType_t MockxQueueReset( QueueHandle_t queue );
 
 BaseType_t MockxQueueSend( QueueHandle_t queue,
                            void * data,

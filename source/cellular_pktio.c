@@ -367,9 +367,13 @@ static CellularPktStatus_t _Cellular_ProcessLine( CellularContext_t * pContext,
                 pkStatus = CELLULAR_PKT_STATUS_OK;
 
                 /* Capture the error line for the requester, PktRespMutex is held. The line is attributed to
-                 * whichever request is attached now, the same way the status queued below is: if the previous
-                 * request timed out and a new one attached between _getMsgType() and this lock, the late line
-                 * is reported against the new request. */
+                 * whichever request is attached now, the same way the status queued by _Cellular_HandlePacket()
+                 * is. A late answer to a request that timed out can therefore land two ways: if the next request
+                 * attached between _getMsgType() and this lock, the line is captured and the status queued for
+                 * that request; if no request is attached, nothing is captured but the status is still queued,
+                 * and _Cellular_AtcmdRequestTimeoutWithCallbackRaw() discards it when the next request attaches.
+                 * The first case stays (the modem's lines carry nothing to tell the requests apart), and a status
+                 * queued between the next request's reset and its send is still taken as its answer. */
                 if( pContext->pPktErrorResponse != NULL )
                 {
                     const size_t lineLength = strnlen( pLine, sizeof( pContext->pPktErrorResponse->line ) - 1U );
