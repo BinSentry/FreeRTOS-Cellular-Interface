@@ -3132,15 +3132,16 @@ void test_Cellular_CommonGetServiceStatus_Cb__Cellular_RecvFuncGetNetworkReg_Par
     /* called by atcmdQueryRegStatus -> queryNetworkStatus for CREG. */
     cbCondition = 6;
     _Cellular_AtcmdRequestWithCallback_StubWithCallback( Mock_AtcmdRequestWithCallback__Cellular_RecvFuncGetNetworkReg );
+
+    /* In the response callback: the prefix is removed before parsing, then _Cellular_ParseRegStatus fails on the
+     * double quote removal and its status is translated. */
+    Cellular_ATRemovePrefix_ExpectAnyArgsAndReturn( CELLULAR_AT_SUCCESS );
+    _Cellular_TranslateAtCoreStatus_ExpectAndReturn( CELLULAR_AT_SUCCESS, CELLULAR_PKT_STATUS_OK );
+    Cellular_ATRemoveAllDoubleQuote_ExpectAnyArgsAndReturn( CELLULAR_AT_BAD_PARAMETER );
+    _Cellular_TranslateAtCoreStatus_ExpectAndReturn( CELLULAR_AT_BAD_PARAMETER, CELLULAR_PKT_STATUS_INVALID_HANDLE );
+
+    /* The request's packet status is the callback's. */
     _Cellular_TranslatePktStatus_ExpectAndReturn( CELLULAR_PKT_STATUS_INVALID_HANDLE, CELLULAR_INTERNAL_FAILURE );
-
-    /* Prefix is removed for both URC and non-URC responses. */
-    Cellular_ATRemovePrefix_IgnoreAndReturn( CELLULAR_AT_SUCCESS );
-    _Cellular_TranslateAtCoreStatus_IgnoreAndReturn( CELLULAR_PKT_STATUS_OK );
-
-    /* Return error in _Cellular_ParseRegStatus. */
-    Cellular_ATRemoveAllDoubleQuote_IgnoreAndReturn( CELLULAR_AT_BAD_PARAMETER );
-    _Cellular_TranslateAtCoreStatus_IgnoreAndReturn( CELLULAR_PKT_STATUS_INVALID_HANDLE );
     _Cellular_NetworkRegistrationCallback_Ignore();
 
     /* called by atcmdUpdateMccMnc. */
