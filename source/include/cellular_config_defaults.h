@@ -435,6 +435,10 @@
     #define CELLULAR_AT_ERROR_RESPONSE_MAX_LENGTH    ( 48U )
 #endif
 
+#if CELLULAR_AT_ERROR_RESPONSE_MAX_LENGTH < 1
+    #error "CELLULAR_AT_ERROR_RESPONSE_MAX_LENGTH must be at least 1, the capture bounds the line by sizeof( line ) - 1"
+#endif
+
 /**
  * @brief Macro to check prefix leading char.<br>
  *
