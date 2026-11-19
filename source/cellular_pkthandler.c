@@ -271,7 +271,7 @@ static CellularPktStatus_t _Cellular_AtcmdRequestTimeoutWithCallbackRaw( Cellula
         PlatformMutex_Lock( &pContext->PktRespMutex );
         pContext->PktioAtCmdType = CELLULAR_AT_NO_COMMAND;
         pContext->pktRespCB = NULL;
-        pContext->pPktErrorResponse = NULL;    // must be cleared so a late response (after timeout) can't write to the caller's (stack) buffer
+        pContext->pPktErrorResponse = NULL;    /* must be cleared so a late response (after timeout) can't write to the caller's (stack) buffer */
         pContext->pCurrentCmd = NULL;
         PlatformMutex_Unlock( &pContext->PktRespMutex );
         LogDebug( ( "<<<<<Exit sending [%s] status[%d]<<<<<", atReq.pAtCmd, pktStatus ) );
