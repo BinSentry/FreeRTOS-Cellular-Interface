@@ -129,6 +129,7 @@ typedef enum CellularError
     CELLULAR_FILE_UPLOAD_FAILURE,    /**< The supplied file updated failed. */
     CELLULAR_FILE_ALREADY_EXISTS,    /**< The supplied file already exists. */
     CELLULAR_FILE_NOT_FOUND,         /**< The supplied file could not be found. */
+    CELLULAR_MODEM_ERROR_RESPONSE,   /**< The modem answered the command with an error final result (e.g. +CME ERROR). */
 } CellularError_t;
 
 /**
